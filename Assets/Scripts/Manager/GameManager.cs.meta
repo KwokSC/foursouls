@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: e6bc81254642b464599c451df609ace7
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - handCard: {instanceID: 0}
+  - lootPrefab: {instanceID: 0}
+  - CharacterSelectionPrefab: {instanceID: 0}
+  - Canvas: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

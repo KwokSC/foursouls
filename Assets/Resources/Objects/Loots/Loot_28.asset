@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c37a1158771c948c1beac20f10f07832, type: 3}
+  m_Name: Loot_28
+  m_EditorClassIdentifier: 
+  lootId: 28
+  lootName: X Wheel of Fortune
+  amount: 1
+  isItem: 0
+  sprite: {fileID: 21300000, guid: b9a303f31101a4b449fcfcac154f2825, type: 3}
