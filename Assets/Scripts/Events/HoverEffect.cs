@@ -8,6 +8,7 @@ public class HoverEffect : MonoBehaviour
 
     public float hoverHeight = 20f;
     public float transitionSpeed = 10f;
+    public bool isHovering;
 
     private void Start()
     {
@@ -34,6 +35,10 @@ public class HoverEffect : MonoBehaviour
 
         currentHoverCoroutine = MoveCardSmoothly(originalLocalPosition);
         StartCoroutine(currentHoverCoroutine);
+    }
+
+    public void OnCardPosXChanged(float x) {
+        originalLocalPosition.x = x;
     }
 
     private IEnumerator MoveCardSmoothly(Vector3 targetLocalPosition)

@@ -21,18 +21,15 @@ public class UIManager : MonoBehaviour
         characterResources = new List<CharacterSO>(Resources.LoadAll<CharacterSO>("Objects/Characters"));
     }
 
-    void Update()
-    {
-        AdjustHandCard();
-    }
-
     // Here to adjust display spacing based on the players' hand cards amount.
     void AdjustHandCard()
     {
         int cardNum = handCard.transform.childCount;
-        if (cardNum > 6)
-        {
-            handCard.GetComponent<GridLayoutGroup>().spacing = new Vector2(-15 * cardNum + 90, 0);
+        float spacing = cardNum>6?(900 - 150 * cardNum) / (cardNum - 1):0;
+        float startPos = cardNum < 6 ? -75 * (cardNum-1): 75;
+        for (int i = 0; i < cardNum; i++) {
+            handCard.transform.GetChild(i).localPosition = new Vector2(startPos + i * (150 + spacing), 0);
+            handCard.transform.GetChild(i).GetComponent<HoverEffect>().OnCardPosXChanged(startPos + i * (150 + spacing));
         }
     }
 
@@ -50,6 +47,8 @@ public class UIManager : MonoBehaviour
         GameObject loot = Instantiate(lootPrefab, Vector2.zero, Quaternion.identity);
         loot.transform.SetParent(handCard.transform, false);
         loot.GetComponent<Loot>().lootSO = lootResource;
+        AdjustHandCard();
+
     }
 
     public void SpawnPlayerDisplay(PlayerManager player)

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using static UnityEditor.Experimental.GraphView.GraphView;
 
 public class GameManager : NetworkBehaviour
 {
@@ -9,23 +10,27 @@ public class GameManager : NetworkBehaviour
     List<int> characterDeck = new();
     List<int> discardDeck = new();
     int startIndex = -1;
+    int currentPlayerIndex;
     public UIManager UIManager;
     public List<PlayerManager> playerList = new List<PlayerManager>();
     public PlayerManager localPlayer;
+    public PlayerManager winner;
 
     public enum GameState
     {
         ServerInitialization,
         WaitingForPlayers,
         CharacterSelection,
-        InGame
+        InGame,
     }
 
     [SyncVar(hook = nameof(OnGameStateChanged))]
     public GameState gameState = GameState.ServerInitialization;
 
-    public float characterSelectionDuration = 15f;
+    [SyncVar(hook = nameof(OnEndGameChanged))]
+    public bool isGameOver = false;
 
+    public float characterSelectionDuration = 15f;
     public float roundDuration = 60f;
 
     [Server]
@@ -37,6 +42,10 @@ public class GameManager : NetworkBehaviour
     public void OnGameStateChanged(GameState oldState, GameState newState)
     {
         Debug.Log("Now the game state is " + this.gameState);
+    }
+
+    public void OnEndGameChanged(bool oldStatus, bool newStatus) {
+        DeclareVictory(winner.playerName);
     }
 
     #region server only
@@ -141,7 +150,24 @@ public class GameManager : NetworkBehaviour
         }
         if (startIndex == -1)
             startIndex = Random.Range(0, playerList.Count);
+
+        currentPlayerIndex = startIndex;
         Debug.Log("The game will start from Player " + playerList[startIndex].playerName + " and clockwisely process.");
+    }
+
+    [Server]
+    bool CheckTurnEnd(PlayerManager player) {
+        return player.isSelfTurn;
+    }
+
+    [Server]
+    void CheckGameOver() {
+        foreach (PlayerManager player in playerList) { 
+            if (player.souls == 4) {
+                winner = player;
+                isGameOver = true;
+            }
+        }
     }
 
     #endregion
@@ -197,6 +223,11 @@ public class GameManager : NetworkBehaviour
         localPlayer.DrawCard(cardList);
     }
 
+    [ClientRpc]
+    void DeclareVictory(string winner) {
+        Debug.Log("The game is over, the winner is " + winner);
+    }
+
     #endregion
 
     #region game coroutine
@@ -246,23 +277,27 @@ public class GameManager : NetworkBehaviour
     IEnumerator StartGame()
     {
         InitializeGame();
-        while (true)
+        while (!isGameOver)
         {
-            StartCoroutine(PlayerTurn());
-            yield return null;
+            CheckGameOver();
+            yield return StartCoroutine(PlayerTurn(playerList[currentPlayerIndex]));
+            currentPlayerIndex = (currentPlayerIndex + 1) % playerList.Count;
         }
     }
 
-    IEnumerator PlayerTurn()
+    IEnumerator PlayerTurn(PlayerManager player)
     {
+        player.CmdStartTurn();
         float roundTimer = roundDuration;
         while (roundTimer > 0)
         {
-
-
+            if (!CheckTurnEnd(player)) { 
+                yield break;
+            }
             roundTimer -= Time.deltaTime;
             yield return null;
         }
+        player.CmdEndTurn();
     }
 
     #endregion
