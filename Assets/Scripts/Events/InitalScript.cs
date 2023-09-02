@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Mirror;
+using UnityEngine.SceneManagement;
 
 public class InitalScript : MonoBehaviour
 {
@@ -28,5 +29,6 @@ public class InitalScript : MonoBehaviour
     public void JumpToMenu()
     {
         room.StopHost();
+        SceneManager.LoadScene("1");
     }
 }

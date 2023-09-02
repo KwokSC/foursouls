@@ -8,6 +8,7 @@ TagManager:
   - RoomPlayer
   - GamePlayer
   - CharacterSelection
+  - Table
   layers:
   - Default
   - TransparentFX

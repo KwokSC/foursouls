@@ -1,7 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using Mirror;
 
 public class JoinScript : MonoBehaviour
@@ -29,5 +28,6 @@ public class JoinScript : MonoBehaviour
     public void JumpToMenu()
     {
         room.StopHost();
+        SceneManager.LoadScene("1");
     }
 }

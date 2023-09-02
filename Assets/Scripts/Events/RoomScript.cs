@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Mirror;
+using UnityEngine.SceneManagement;
 
 public class RoomScript : MonoBehaviour
 {
@@ -89,25 +90,6 @@ public class RoomScript : MonoBehaviour
         else {
             room.StopClient();
         }
+        SceneManager.LoadScene("1");
     }
-
-    //public GameObject SpawnRoomPlayerDisplay(RoomPlayerManager roomPlayer)
-    //{
-    //    if (roomPlayerDisplayPrefab != null)
-    //    {
-    //        GameObject roomPlayerDisplay = Instantiate(roomPlayerDisplayPrefab, Vector2.zero, Quaternion.identity);
-    //        roomPlayerDisplay.GetComponent<RoomPlayerDisplay>().PlayerName.text = roomPlayer.playerName;
-    //        roomPlayerDisplay.transform.SetParent(PlayerList.transform);
-    //        return roomPlayerDisplay;
-    //    }
-    //    return null;
-    //}
-
-    //public void DestroyRoomPlayerDisplay(GameObject displayObject)
-    //{
-    //    if (displayObject != null)
-    //    {
-    //        Destroy(displayObject);
-    //    }
-    //}
 }

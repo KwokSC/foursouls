@@ -14,15 +14,14 @@ public class CharacterSelect : MonoBehaviour
     public GameObject CharacterOptionPrefab;
     List<GameObject> optionsList = new();
 
-    public void GeneratePanel(int[] list)
+    public void GeneratePanel(int[] list, List<CharacterSO> optionResources)
     {
         options = list;
-        foreach (int i in list)
+        foreach (CharacterSO resource in optionResources)
         {
-            CharacterSO characterSO = Resources.Load<CharacterSO>("Objects/Characters/Character_" + i);
             GameObject characterOption = Instantiate(CharacterOptionPrefab, Vector2.zero, Quaternion.identity);
-            characterOption.GetComponent<Image>().sprite = characterSO.sprite;
-            characterOption.GetComponent<CharacterOption>().characterId = characterSO.characterId;
+            characterOption.GetComponent<Image>().sprite = resource.sprite;
+            characterOption.GetComponent<CharacterOption>().characterId = resource.characterId;
             characterOption.transform.SetParent(transform.Find("CharacterOptions"), false);
             optionsList.Add(characterOption);
         }

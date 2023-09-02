@@ -26,6 +26,9 @@ public class PlayerManager : NetworkBehaviour
 
     public bool isDead;
 
+    [SyncVar(hook = nameof(OnTurnStatusChanged))]
+    public bool isSelfTurn;
+
     public CharacterSO characterSO;
     public Image avatarImage;
     public Text nameText;
@@ -34,17 +37,16 @@ public class PlayerManager : NetworkBehaviour
     public Text coinsText;
     public Text soulsText;
 
-    public GameObject characterDisplay;
-    public GameObject enemyArea;
-    public CharacterSelect characterSelection;
     List<int> handCardList = new();
 
-    GameManager gameManager;
+    GameManager GameManager;
+    UIManager UIManager;
 
     public override void OnStartClient()
     {
-        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
-        SpawnPlayerDisplay();
+        GameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        UIManager = GameObject.Find("UIManager").GetComponent<UIManager>();
+        UIManager.SpawnPlayerDisplay(this);
     }
 
     void Update() {
@@ -58,11 +60,11 @@ public class PlayerManager : NetworkBehaviour
 
     public void OnCharacterIdChanged(int oldId, int newId)
     {
-        Debug.Log("The character id changed.");
         characterSO = Resources.Load<CharacterSO>("Objects/Characters/Character_" + characterId);
         avatarImage.sprite = characterSO.sprite;
         attack = characterSO.attack;
         health = characterSO.health;
+        Debug.Log(playerName + "'s character is: " + characterSO.characterName);
     }
 
     public void OnAttackChanged(int oldAttack, int newAttack)
@@ -84,10 +86,31 @@ public class PlayerManager : NetworkBehaviour
         soulsText.text = souls.ToString();
     }
 
+    public void OnTurnStatusChanged(bool oldStatus, bool newStatus) {
+
+    }
+
     public void SetupPlayer(RoomPlayerManager roomPlayer) {
         playerName = roomPlayer.playerName;
         coins = 3;
         isDead = false;
+    }
+
+    public void DrawCard(int[] cardList)
+    {
+        if (!isLocalPlayer) return;
+        handCardList.AddRange(cardList);
+        foreach (int id in cardList)
+        {
+            UIManager.SpawnCard(id);
+        }
+    }
+
+    public void DrawCard(int card)
+    {
+        if (!isLocalPlayer) return;
+        handCardList.Add(card);
+        UIManager.SpawnCard(card);
     }
 
     [Command]
@@ -96,13 +119,9 @@ public class PlayerManager : NetworkBehaviour
     }
 
     [Command]
-    public void CmdDrawCard() {
-        if (!isLocalPlayer) return;
-    }
-
-    [Command]
     public void CmdDealCard() {
         if (!isLocalPlayer) return;
+
     }
 
     [Command]
@@ -118,13 +137,6 @@ public class PlayerManager : NetworkBehaviour
     [Command]
     public void CmdAttackMonster(GameObject monster) {
         if (!isLocalPlayer) return;
-    }
-
-    void SpawnPlayerDisplay() {
-        characterDisplay = GameObject.Find("Table/PlayerArea/CharacterDisplay");
-        enemyArea = GameObject.Find("Table/EnemyArea");
-        if (isLocalPlayer) transform.SetParent(characterDisplay.transform, false);
-        else transform.SetParent(enemyArea.transform, false);
     }
 
     void LiveStatusChange() {
