@@ -38,6 +38,7 @@ public class HoverEffect : MonoBehaviour
     }
 
     public void OnCardPosXChanged(float x) {
+        transform.localPosition = new Vector3(x, 0, 0);
         originalLocalPosition.x = x;
     }
 

@@ -28,7 +28,6 @@ public class UIManager : MonoBehaviour
         float spacing = cardNum>6?(900 - 150 * cardNum) / (cardNum - 1):0;
         float startPos = cardNum < 6 ? -75 * (cardNum-1): 75;
         for (int i = 0; i < cardNum; i++) {
-            handCard.transform.GetChild(i).localPosition = new Vector2(startPos + i * (150 + spacing), 0);
             handCard.transform.GetChild(i).GetComponent<HoverEffect>().OnCardPosXChanged(startPos + i * (150 + spacing));
         }
     }
@@ -48,7 +47,6 @@ public class UIManager : MonoBehaviour
         loot.transform.SetParent(handCard.transform, false);
         loot.GetComponent<Loot>().lootSO = lootResource;
         AdjustHandCard();
-
     }
 
     public void SpawnPlayerDisplay(PlayerManager player)
