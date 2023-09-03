@@ -7,7 +7,7 @@ public class ItemSO: ScriptableObject
     public string itemName;
     public Sprite sprite;
     public bool isPassive;
-
+    public bool isEternal;
     public virtual void Effect() { }
 }
 

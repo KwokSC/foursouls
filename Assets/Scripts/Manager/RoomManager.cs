@@ -6,6 +6,14 @@ using System.Linq;
 
 public class RoomManager : NetworkRoomManager
 {
+    public RoomState roomState = RoomState.InRoom;
+
+    public enum RoomState
+    {
+        InRoom,
+        InGame
+    }
+
     public override void OnStartHost()
     {
         base.OnStartHost();
@@ -14,6 +22,15 @@ public class RoomManager : NetworkRoomManager
     public override void OnStartClient()
     {
         base.OnStartClient();
+    }
+
+    void ChangeRoomState(string sceneName) {
+        if (sceneName.Equals(RoomScene)) {
+            roomState = RoomState.InRoom;
+        }
+        else if(sceneName.Equals(GameplayScene)) {
+            roomState = RoomState.InGame;
+        }
     }
 
     // Only call the first time a client player enters a room.
@@ -37,4 +54,7 @@ public class RoomManager : NetworkRoomManager
         return gamePlayerObject;
     }
 
+    public override void OnRoomServerSceneChanged(string sceneName) {
+        ChangeRoomState(sceneName);
+    }
 }

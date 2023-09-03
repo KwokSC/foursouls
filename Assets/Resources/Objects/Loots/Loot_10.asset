@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lootId: 10
   lootName: Butter Bean
-  amount: 0
+  amount: 3
   isItem: 0
   sprite: {fileID: 21300000, guid: d810c015797714aacb5e5dbf3e0dac99, type: 3}

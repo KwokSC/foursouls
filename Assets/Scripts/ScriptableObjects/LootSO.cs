@@ -10,6 +10,4 @@ public class LootSO : ScriptableObject
     public int amount;
     public bool isItem;
     public Sprite sprite;
-
-    public virtual void Effect() { }
 }

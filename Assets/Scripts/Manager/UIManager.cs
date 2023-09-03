@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
@@ -19,7 +18,6 @@ public class UIManager : MonoBehaviour
     {
         lootResources = new List<LootSO>(Resources.LoadAll<LootSO>("Objects/Loots"));
         characterResources = new List<CharacterSO>(Resources.LoadAll<CharacterSO>("Objects/Characters"));
-        Debug.Log(characterResources == null);
     }
 
     // Here to adjust display spacing based on the players' hand cards amount.
@@ -35,10 +33,6 @@ public class UIManager : MonoBehaviour
 
     public void CharaterSelectDisplay(int[] options, float timeLimit)
     {
-        foreach (int i in options)
-        {
-            Debug.Log(i);
-        }
         GameObject CharacterSelection = Instantiate(characterSelectionPrefab, Vector2.zero, Quaternion.identity);
         CharacterSelection.transform.SetParent(table.transform, false);
         List<CharacterSO> optionResources = characterResources.Where(character => options.Contains(character.characterId)).ToList();

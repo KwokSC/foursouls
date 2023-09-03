@@ -19,6 +19,7 @@ public class GameManager : NetworkBehaviour
         WaitingForPlayers,
         CharacterSelection,
         InGame,
+        EndGame
     }
 
     int startIndex = -1;
@@ -167,6 +168,7 @@ public class GameManager : NetworkBehaviour
 
         currentPlayerIndex = startIndex;
         playerList[currentPlayerIndex].isSelfTurn = true;
+
         Debug.Log("The game will start from Player " + playerList[startIndex].playerName + " and clockwisely process.");
     }
 
@@ -320,7 +322,6 @@ public class GameManager : NetworkBehaviour
         }
         player.isSelfTurn = false;
     }
-
     #endregion
 
 }

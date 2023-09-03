@@ -3,9 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Mirror;
+using System;
 
 public class PlayerManager : NetworkBehaviour
 {
+    public enum PlayerState { 
+        Idle,
+        Attack,
+        Dead
+    }
+
     [SyncVar(hook = nameof(OnNameChanged))]
     public string playerName;
 
@@ -24,10 +31,11 @@ public class PlayerManager : NetworkBehaviour
     [SyncVar(hook = nameof(OnSoulsChanged))]
     public int souls;
 
-    public bool isDead;
-
     [SyncVar(hook = nameof(OnTurnStatusChanged))]
     public bool isSelfTurn;
+
+    [SyncVar(hook =nameof(OnStateChanged))]
+    public PlayerState playerState;
 
     public CharacterSO characterSO;
     public Image avatarImage;
@@ -47,10 +55,6 @@ public class PlayerManager : NetworkBehaviour
         GameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         UIManager = GameObject.Find("UIManager").GetComponent<UIManager>();
         UIManager.SpawnPlayerDisplay(this);
-    }
-
-    void Update() {
-        LiveStatusChange();
     }
 
     public void OnNameChanged(string oldName, string newName)
@@ -90,10 +94,14 @@ public class PlayerManager : NetworkBehaviour
 
     }
 
+    public void OnStateChanged(PlayerState oldState, PlayerState newState) { 
+    
+    }
+
     public void SetupPlayer(RoomPlayerManager roomPlayer) {
         playerName = roomPlayer.playerName;
         coins = 3;
-        isDead = false;
+        playerState = PlayerState.Idle;
     }
 
     public void DrawCard(int[] cardList)
@@ -113,19 +121,24 @@ public class PlayerManager : NetworkBehaviour
         UIManager.SpawnCard(card);
     }
 
+    #region command
     [Command]
     public void CmdSetupCharacter(int id) {
         characterId = id;
     }
 
     [Command]
-    public void CmdDealCard() {
+    public void CmdDealCard(int id) {
         if (!isLocalPlayer) return;
-
     }
 
     [Command]
-    public void CmdUseItem() {
+    public void CmdDealCard(int id, GameObject target) {
+        if (!isLocalPlayer) return;
+    }
+
+    [Command]
+    public void CmdActivateObject() {
         if (!isLocalPlayer) return;
     }
 
@@ -139,7 +152,10 @@ public class PlayerManager : NetworkBehaviour
         if (!isLocalPlayer) return;
     }
 
-    void LiveStatusChange() {
-        if (health <= 0) isDead = true;
+    [Command]
+    public void CmdGainMoney(int money) { 
+        if (!isLocalPlayer) return;
+        coins += money;
     }
+    #endregion
 }

@@ -16,7 +16,6 @@ public class JoinScript : MonoBehaviour
 
     public void OnNameChanged()
     {
-        Player.playerName = nameInput.text;
     }
 
     public void JumpToRoom()

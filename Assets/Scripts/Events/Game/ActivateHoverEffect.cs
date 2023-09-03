@@ -14,7 +14,7 @@ public class ActivateHoverEffect : MonoBehaviour
         originalScale = transform.localScale;
     }
 
-    private void OnMouseEnter()
+    public void OnMouseEnter()
     {
         if (currentHoverCoroutine != null)
         {
@@ -24,7 +24,7 @@ public class ActivateHoverEffect : MonoBehaviour
         StartCoroutine(currentHoverCoroutine);
     }
 
-    private void OnMouseExit()
+    public void OnMouseExit()
     {
         if (currentHoverCoroutine != null)
         {
@@ -32,6 +32,10 @@ public class ActivateHoverEffect : MonoBehaviour
         }
         currentHoverCoroutine = ScaleCardSmoothly(originalScale);
         StartCoroutine(currentHoverCoroutine);
+    }
+
+    public void OnClick() {
+        transform.Rotate(Vector3.forward, 90f);
     }
 
     private IEnumerator ScaleCardSmoothly(Vector3 targetScale)

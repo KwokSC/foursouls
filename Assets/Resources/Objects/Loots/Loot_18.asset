@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lootId: 18
   lootName: Dice Shard
-  amount: 0
+  amount: 3
   isItem: 0
   sprite: {fileID: 21300000, guid: 9ca3ee98e01f74a98845069adc54a061, type: 3}
