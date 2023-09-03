@@ -214,6 +214,7 @@ public class GameManager : NetworkBehaviour
     [TargetRpc]
     void TargetSendCharacterOptions(NetworkConnection connection, int[] options, float selectionTimeLimit)
     {
+        Debug.Log(localPlayer.playerName+"'s character options are: " +string.Join(",", options));
         UIManager.CharaterSelectDisplay(options, selectionTimeLimit);
     }
 
