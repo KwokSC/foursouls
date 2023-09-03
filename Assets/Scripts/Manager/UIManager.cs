@@ -15,10 +15,11 @@ public class UIManager : MonoBehaviour
     List<LootSO> lootResources;
     List<CharacterSO> characterResources;
 
-    void Start()
+    void Awake()
     {
         lootResources = new List<LootSO>(Resources.LoadAll<LootSO>("Objects/Loots"));
         characterResources = new List<CharacterSO>(Resources.LoadAll<CharacterSO>("Objects/Characters"));
+        Debug.Log(characterResources == null);
     }
 
     // Here to adjust display spacing based on the players' hand cards amount.
@@ -28,12 +29,16 @@ public class UIManager : MonoBehaviour
         float spacing = cardNum>6?(900 - 150 * cardNum) / (cardNum - 1):0;
         float startPos = cardNum < 6 ? -75 * (cardNum-1): 75;
         for (int i = 0; i < cardNum; i++) {
-            handCard.transform.GetChild(i).GetComponent<HoverEffect>().OnCardPosXChanged(startPos + i * (150 + spacing));
+            handCard.transform.GetChild(i).GetComponent<CardHoverEffect>().OnCardPosXChanged(startPos + i * (150 + spacing));
         }
     }
 
     public void CharaterSelectDisplay(int[] options, float timeLimit)
     {
+        foreach (int i in options)
+        {
+            Debug.Log(i);
+        }
         GameObject CharacterSelection = Instantiate(characterSelectionPrefab, Vector2.zero, Quaternion.identity);
         CharacterSelection.transform.SetParent(table.transform, false);
         List<CharacterSO> optionResources = characterResources.Where(character => options.Contains(character.characterId)).ToList();

@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class HoverEffect : MonoBehaviour
+public class CardHoverEffect : MonoBehaviour
 {
     private Vector3 originalLocalPosition;
     private IEnumerator currentHoverCoroutine;

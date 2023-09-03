@@ -46,6 +46,7 @@ public class GameManager : NetworkBehaviour
     public void OnCurrentPlayerChanged(int oldPlayer, int newPlayer)
     {
         Debug.Log("Now is " + playerList[currentPlayerIndex].playerName + "'s turn.");
+        playerList[currentPlayerIndex].isSelfTurn = true;
     }
 
     public void OnGameStateChanged(GameState oldState, GameState newState)
@@ -53,7 +54,8 @@ public class GameManager : NetworkBehaviour
         Debug.Log("Now the game state is " + this.gameState);
     }
 
-    public void OnEndGameChanged(bool oldStatus, bool newStatus) {
+    public void OnEndGameChanged(bool oldStatus, bool newStatus)
+    {
         DeclareVictory(winner.playerName);
     }
 
@@ -164,18 +166,23 @@ public class GameManager : NetworkBehaviour
             startIndex = Random.Range(0, playerList.Count);
 
         currentPlayerIndex = startIndex;
+        playerList[currentPlayerIndex].isSelfTurn = true;
         Debug.Log("The game will start from Player " + playerList[startIndex].playerName + " and clockwisely process.");
     }
 
     [Server]
-    bool CheckTurnEnd(PlayerManager player) {
+    bool CheckTurnEnd(PlayerManager player)
+    {
         return player.isSelfTurn;
     }
 
     [Server]
-    void CheckGameOver() {
-        foreach (PlayerManager player in playerList) { 
-            if (player.souls == 4) {
+    void CheckGameOver()
+    {
+        foreach (PlayerManager player in playerList)
+        {
+            if (player.souls == 4)
+            {
                 winner = player;
                 isGameOver = true;
             }
@@ -236,7 +243,8 @@ public class GameManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    void DeclareVictory(string winner) {
+    void DeclareVictory(string winner)
+    {
         Debug.Log("The game is over, the winner is " + winner);
     }
 
@@ -302,12 +310,14 @@ public class GameManager : NetworkBehaviour
         float roundTimer = roundDuration;
         while (roundTimer > 0)
         {
-            if (!CheckTurnEnd(player)) { 
+            if (!CheckTurnEnd(player))
+            {
                 yield break;
             }
             roundTimer -= Time.deltaTime;
             yield return null;
         }
+        player.isSelfTurn = false;
     }
 
     #endregion
