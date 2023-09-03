@@ -8,8 +8,6 @@ public class GameManager : NetworkBehaviour
     List<int> lootDeck = new();
     List<int> characterDeck = new();
     List<int> discardDeck = new();
-    int startIndex = -1;
-    int currentPlayerIndex;
     public UIManager UIManager;
     public List<PlayerManager> playerList = new List<PlayerManager>();
     public PlayerManager localPlayer;
@@ -22,6 +20,11 @@ public class GameManager : NetworkBehaviour
         CharacterSelection,
         InGame,
     }
+
+    int startIndex = -1;
+
+    [SyncVar(hook = nameof(OnCurrentPlayerChanged))]
+    public int currentPlayerIndex;
 
     [SyncVar(hook = nameof(OnGameStateChanged))]
     public GameState gameState = GameState.ServerInitialization;
@@ -38,6 +41,13 @@ public class GameManager : NetworkBehaviour
         StartCoroutine(GameProcess());
     }
 
+    #region hooks
+
+    public void OnCurrentPlayerChanged(int oldPlayer, int newPlayer)
+    {
+        Debug.Log("Now is " + playerList[currentPlayerIndex].playerName + "'s turn.");
+    }
+
     public void OnGameStateChanged(GameState oldState, GameState newState)
     {
         Debug.Log("Now the game state is " + this.gameState);
@@ -46,6 +56,8 @@ public class GameManager : NetworkBehaviour
     public void OnEndGameChanged(bool oldStatus, bool newStatus) {
         DeclareVictory(winner.playerName);
     }
+
+    #endregion
 
     #region server only
 
@@ -134,6 +146,7 @@ public class GameManager : NetworkBehaviour
     [Server]
     void InitializeGame()
     {
+
         foreach (PlayerManager player in playerList)
         {
             if (player.characterId == 2)
@@ -286,7 +299,6 @@ public class GameManager : NetworkBehaviour
 
     IEnumerator PlayerTurn(PlayerManager player)
     {
-        player.CmdStartTurn();
         float roundTimer = roundDuration;
         while (roundTimer > 0)
         {
@@ -296,8 +308,8 @@ public class GameManager : NetworkBehaviour
             roundTimer -= Time.deltaTime;
             yield return null;
         }
-        player.CmdEndTurn();
     }
 
     #endregion
+
 }

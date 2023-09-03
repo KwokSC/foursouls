@@ -139,18 +139,6 @@ public class PlayerManager : NetworkBehaviour
         if (!isLocalPlayer) return;
     }
 
-    [Command]
-    public void CmdStartTurn() {
-        Debug.Log("Now is "+playerName+"'s turn.");
-        isSelfTurn = true;
-    }
-
-    [Command]
-    public void CmdEndTurn() {
-        Debug.Log("Now " + playerName + " end turn.");
-        isSelfTurn = false;
-    }
-
     void LiveStatusChange() {
         if (health <= 0) isDead = true;
     }

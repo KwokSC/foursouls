@@ -30,15 +30,11 @@ public class RoomManager : NetworkRoomManager
         }
     }
 
-    public override void OnStopServer()
-    {
-        base.OnStopServer();
-    }
-
     public override GameObject OnRoomServerCreateGamePlayer(NetworkConnectionToClient conn, GameObject roomPlayer) {
         GameObject gamePlayerObject = Instantiate(playerPrefab, Vector2.zero, Quaternion.identity);
         PlayerManager gamePlayer = gamePlayerObject.GetComponent<PlayerManager>();
         gamePlayer.SetupPlayer(roomPlayer.GetComponent<RoomPlayerManager>());
         return gamePlayerObject;
     }
+
 }
