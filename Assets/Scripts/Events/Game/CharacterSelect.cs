@@ -45,15 +45,7 @@ public class CharacterSelect : MonoBehaviour
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         if (selection == -1) return;
         gameManager.localPlayer.CmdSetupCharacter(selection);
-        ClearComponents();
-    }
-
-    void ClearComponents()
-    {
-        foreach (Transform child in transform)
-        {
-            Destroy(child.gameObject);
-        }
+        Destroy(this);
     }
 
 }

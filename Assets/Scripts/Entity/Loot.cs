@@ -21,4 +21,10 @@ public class Loot : MonoBehaviour
         isItem = lootSO.isItem;
         lootName = lootSO.lootName;
     }
+
+    public void ExecuteEffect() {
+        foreach (CardEffectSO effect in lootSO.effects) { 
+            effect.ExecuteEffects();
+        }
+    }
 }

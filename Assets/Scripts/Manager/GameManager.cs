@@ -213,6 +213,13 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    [ClientRpc]
+    void SpawnGamePlayerDisplay() {
+        foreach (PlayerManager player in playerList) {
+            player.gamePlayerDisplay = UIManager.SpawnPlayerDisplay(player);
+        }
+    }
+
     [TargetRpc]
     void TargetSendCharacterOptions(NetworkConnection connection, int[] options, float selectionTimeLimit)
     {
@@ -283,6 +290,7 @@ public class GameManager : NetworkBehaviour
     IEnumerator CharacterSelectionPhase()
     {
         GenerateCharacterOptions(characterSelectionDuration);
+        SpawnGamePlayerDisplay();
         float countdownTimer = characterSelectionDuration;
         while (countdownTimer > 0)
         {
