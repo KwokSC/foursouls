@@ -5,16 +5,21 @@ using UnityEngine;
 
 public class UIManager : MonoBehaviour
 {
+    public float hoverDuration = 0.5f;
+
     public GameObject table;
     public GameObject handCard;
-    public GameObject lootPrefab;
-    public GameObject characterSelectionPrefab;
     public GameObject characterDisplay;
     public GameObject enemyArea;
+
+    public GameObject dicePrefab;
+    public GameObject lootPrefab;
+    public GameObject characterSelectionPrefab;
     public GameObject gamePlayerDisplayPrefab;
-    public GameObject heartPrefab;
+
     List<LootSO> lootResources;
     List<CharacterSO> characterResources;
+
 
     void Awake()
     {
@@ -54,6 +59,7 @@ public class UIManager : MonoBehaviour
     {
         GameObject gamePlayerDisplay = Instantiate(gamePlayerDisplayPrefab, Vector3.zero, Quaternion.identity);
         gamePlayerDisplay.GetComponent<GamePlayerDisplay>().playerName.text = player.playerName;
+        gamePlayerDisplay.GetComponent<GamePlayerDisplay>().player = player;
         if (player.isLocalPlayer) {
             gamePlayerDisplay.transform.SetParent(characterDisplay.transform, false);
         }
@@ -61,10 +67,6 @@ public class UIManager : MonoBehaviour
             gamePlayerDisplay.transform.SetParent(enemyArea.transform, false);
         }
         return gamePlayerDisplay;
-    }
-
-    public void OnPlayerNameUpdate(PlayerManager player) {
-        player.gamePlayerDisplay.GetComponent<GamePlayerDisplay>().playerName.text = player.playerName;
     }
 
     public void OnCharacterUpdate(PlayerManager player) {
@@ -88,5 +90,24 @@ public class UIManager : MonoBehaviour
 
     public void OnSoulsUpdate(PlayerManager player) {
         player.gamePlayerDisplay.GetComponent<GamePlayerDisplay>().soulsText.text = player.souls.ToString();
+    }
+
+    public void OnActivatedUpdate(GameObject card) {
+        StartCoroutine(RotateCard(card));
+    }
+    private IEnumerator RotateCard(GameObject card)
+    {
+        float elapsedTime = 0f;
+        Vector3 originalRotation = card.transform.eulerAngles;
+        Quaternion targetRotation = Quaternion.Euler(originalRotation.x, originalRotation.y, originalRotation.z + 90f);
+        while (elapsedTime < hoverDuration)
+        {
+            card.transform.localScale = Vector3.Lerp(card.transform.localScale, Vector3.one, elapsedTime / hoverDuration);
+            card.transform.rotation = Quaternion.Slerp(card.transform.rotation, targetRotation, elapsedTime / hoverDuration);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        card.transform.localScale = Vector3.one;
+        card.transform.rotation = targetRotation;
     }
 }

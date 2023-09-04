@@ -2,9 +2,7 @@ public class MoneyEffect : ICardEffect
 {
     public int money;
 
-    public PlayerManager player;
-
-    public void ExecuteEffect() {
+    public void ExecuteEffect(PlayerManager player) {
         player.CmdMoneyChange(money); 
     }
 }

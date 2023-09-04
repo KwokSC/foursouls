@@ -1,19 +1,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using Mirror;
-using System;
 
 public class PlayerManager : NetworkBehaviour
 {
-    public enum PlayerState { 
+    public enum PlayerState {
         Idle,
         Attack,
         Dead
     }
 
-    [SyncVar(hook = nameof(OnNameChanged))]
+    [SyncVar]
     public string playerName;
 
     [SyncVar(hook = nameof(OnCharacterIdChanged))]
@@ -34,59 +32,55 @@ public class PlayerManager : NetworkBehaviour
     [SyncVar(hook = nameof(OnTurnStatusChanged))]
     public bool isSelfTurn;
 
-    [SyncVar(hook =nameof(OnStateChanged))]
+    [SyncVar(hook = nameof(OnStateChanged))]
     public PlayerState playerState;
+
+    [SyncVar(hook = nameof(OnActivatedChanged))]
+    public bool isActivated = false;
 
     public GameObject gamePlayerDisplay;
 
     List<int> handCardList = new();
+    List<int> itemList = new();
     int availableDeals = 0;
 
     GameManager GameManager;
     UIManager UIManager;
 
-    private void Awake()
+    void Awake()
     {
         GameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         UIManager = GameObject.Find("UIManager").GetComponent<UIManager>();
     }
 
-    public void OnNameChanged(string oldName, string newName)
-    {
-        if(gamePlayerDisplay != null)
-            UIManager.OnPlayerNameUpdate(this);
-    }
-
     public void OnCharacterIdChanged(int oldId, int newId)
     {
-        if(gamePlayerDisplay != null)
-            UIManager.OnCharacterUpdate(this);
+        UIManager.OnCharacterUpdate(this);
     }
 
     public void OnAttackChanged(int oldAttack, int newAttack)
     {
-
-        if (gamePlayerDisplay != null)
-            UIManager.OnAttackUpdate(this);
+        UIManager.OnAttackUpdate(this);
     }
 
     public void OnHealthChanged(int oldHealth, int newHealth)
     {
-        if (gamePlayerDisplay != null)
-            UIManager.OnHealthUpdate(this);
+        UIManager.OnHealthUpdate(this);
     }
 
     public void OnCoinsChanged(int oldCoins, int newCoins)
     {
-
-        if (gamePlayerDisplay != null)
-            UIManager.OnCoinsUpdate(this);
+        UIManager.OnCoinsUpdate(this);
     }
 
-    public void OnSoulsChanged(int oldSouls, int newSouls) {
+    public void OnSoulsChanged(int oldSouls, int newSouls) 
+    {
+        UIManager.OnSoulsUpdate(this);
+    }
 
-        if (gamePlayerDisplay != null)
-            UIManager.OnSoulsUpdate(this);
+    public void OnActivatedChanged(bool oldStatue, bool newStatus) {
+        UIManager.OnActivatedUpdate(gamePlayerDisplay.transform.Find("Avatar").gameObject);
+        Debug.Log(playerName + "Activate Status Change");
     }
 
     public void OnTurnStatusChanged(bool oldStatus, bool newStatus) {
@@ -127,7 +121,7 @@ public class PlayerManager : NetworkBehaviour
 
     [Command]
     public void CmdDealCard(GameObject loot) {
-        if (!isLocalPlayer) return;
+        if (!isLocalPlayer && availableDeals == 0) return;
         Loot lootComponent = loot.GetComponent<Loot>();
         lootComponent.ExecuteEffect();
         handCardList.Remove(lootComponent.lootId);
@@ -136,11 +130,20 @@ public class PlayerManager : NetworkBehaviour
     [Command]
     public void CmdDealCard(GameObject loot, GameObject target) {
         if (!isLocalPlayer && availableDeals==0) return;
+        Loot lootComponent = loot.GetComponent<Loot>();
+        lootComponent.ExecuteEffect();
+        handCardList.Remove(lootComponent.lootId);
     }
 
     [Command]
-    public void CmdActivateObject() {
+    public void CmdActivateObject(GameObject target) {
         if (!isLocalPlayer) return;
+        target.GetComponent<Item>().ExecuteEffect();
+    }
+
+    [Command]
+    public void CmdActivateCharacter() {
+        isActivated = true;
     }
 
     [Command]
@@ -157,6 +160,8 @@ public class PlayerManager : NetworkBehaviour
     public void CmdMoneyChange(int money) { 
         if (!isLocalPlayer) return;
         coins += money;
+        UIManager.OnCoinsUpdate(this);
     }
+
     #endregion
 }

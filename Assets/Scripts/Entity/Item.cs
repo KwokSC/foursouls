@@ -9,15 +9,20 @@ public class Item: MonoBehaviour
     public string itemName;
     public ItemSO itemSO;
     public Image image;
-    public bool isActive;
+    public bool isActivated;
     public bool isPassive;
+    public PlayerManager player;
 
     private void Start()
     {
         itemId = itemSO.itemId;
         itemName = itemSO.itemName;
         isPassive = itemSO.isPassive;
-        isActive = isPassive ? false : true;
+        isActivated = isPassive ? false : true;
         image.sprite = itemSO.sprite;
+    }
+
+    public void ExecuteEffect() { 
+    
     }
 }

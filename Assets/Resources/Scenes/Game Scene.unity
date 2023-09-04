@@ -272,12 +272,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   table: {fileID: 1573897044100591517}
   handCard: {fileID: 7942073526755715315}
-  lootPrefab: {fileID: 4547074719382619189, guid: da6b6a0232dbf4bbeb789e3d065ec63c, type: 3}
-  characterSelectionPrefab: {fileID: 8241867739460283098, guid: c2b4b131989e44a8ba45a747bc2d9e39, type: 3}
   characterDisplay: {fileID: 1652386855}
   enemyArea: {fileID: 8158442586513771013}
+  dicePrefab: {fileID: 3351809598937206532, guid: 6694cd12d2ed8454589db8fb4bafb134, type: 3}
+  lootPrefab: {fileID: 4547074719382619189, guid: da6b6a0232dbf4bbeb789e3d065ec63c, type: 3}
+  characterSelectionPrefab: {fileID: 8241867739460283098, guid: c2b4b131989e44a8ba45a747bc2d9e39, type: 3}
   gamePlayerDisplayPrefab: {fileID: 5350336116136908414, guid: 6f629c9cd5c1d6c43a3702f416d04382, type: 3}
-  heartPrefab: {fileID: 2720799843141855315, guid: 182b782fea134f64eab7266ba8000f97, type: 3}
 --- !u!114 &163376225
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -613,10 +613,11 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  UIManager: {fileID: 163376224}
   playerList: []
   localPlayer: {fileID: 0}
   winner: {fileID: 0}
+  UIManager: {fileID: 163376224}
+  AudioManager: {fileID: 0}
   currentPlayerIndex: 0
   gameState: 0
   isGameOver: 0
@@ -725,7 +726,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 600, y: 0}
-  m_SizeDelta: {x: 300, y: 200}
+  m_SizeDelta: {x: 300, y: 240}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1385591073
 CanvasRenderer:
@@ -755,7 +756,7 @@ MonoBehaviour:
   m_ChildAlignment: 0
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 70, y: 100}
+  m_CellSize: {x: 60, y: 80}
   m_Spacing: {x: 0, y: 0}
   m_Constraint: 1
   m_ConstraintCount: 4
@@ -935,7 +936,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 900, y: 200}
+  m_SizeDelta: {x: 900, y: 240}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &7877144272153809870
 GameObject:

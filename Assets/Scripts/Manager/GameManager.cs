@@ -8,10 +8,13 @@ public class GameManager : NetworkBehaviour
     List<int> lootDeck = new();
     List<int> characterDeck = new();
     List<int> discardDeck = new();
-    public UIManager UIManager;
+
     public List<PlayerManager> playerList = new List<PlayerManager>();
     public PlayerManager localPlayer;
     public PlayerManager winner;
+
+    public UIManager UIManager;
+    public AudioManager AudioManager;
 
     public enum GameState
     {
@@ -250,6 +253,11 @@ public class GameManager : NetworkBehaviour
     void SendHandCard(NetworkConnection connection, int[] cardList)
     {
         localPlayer.DrawCard(cardList);
+    }
+
+    [TargetRpc]
+    void ForceEndTurn(NetworkConnection connection) { 
+        localPlayer.isSelfTurn = false;
     }
 
     [ClientRpc]

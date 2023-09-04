@@ -17,3 +17,5 @@ MonoBehaviour:
   amount: 9
   isItem: 0
   sprite: {fileID: 21300000, guid: 937002727b8214640a98301a992e1a25, type: 3}
+  effects:
+  - {fileID: 11400000, guid: 09ab009ee5711cc4184c35c3c0610852, type: 2}
