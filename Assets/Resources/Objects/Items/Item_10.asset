@@ -16,4 +16,5 @@ MonoBehaviour:
   itemName: Bloody Penny
   sprite: {fileID: 21300000, guid: 955e06a93899e45f18d32e1dac324e73, type: 3}
   isPassive: 1
-  isEternal: 0
+  type: 2
+  effects: []

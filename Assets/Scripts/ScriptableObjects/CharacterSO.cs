@@ -10,6 +10,5 @@ public class CharacterSO : ScriptableObject
 	public Sprite sprite;
 	public int attack;
 	public int health;
-	public bool isActive;
-	public ItemSO eternal;
+	public int eternal;
 }

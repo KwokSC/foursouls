@@ -26,9 +26,9 @@ public class DiceScript : MonoBehaviour
         diceVelocity = rb.velocity;
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            float dirX = Random.Range(0, 300);
-            float dirY = Random.Range(0, 300);
-            float dirZ = Random.Range(0, 300);
+            float dirX = Random.Range(0, 200);
+            float dirY = Random.Range(0, 200);
+            float dirZ = Random.Range(0, 200);
             rb.velocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
             transform.position = originalPosition;

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
@@ -9,50 +10,75 @@ public class UIManager : MonoBehaviour
 
     public GameObject table;
     public GameObject handCard;
+    public GameObject itemList;
     public GameObject characterDisplay;
     public GameObject enemyArea;
+    public GameObject timer;
 
     public GameObject dicePrefab;
     public GameObject lootPrefab;
+    public GameObject itemPrefab;
     public GameObject characterSelectionPrefab;
     public GameObject gamePlayerDisplayPrefab;
 
     List<LootSO> lootResources;
     List<CharacterSO> characterResources;
-
+    List<ItemSO> itemResources;
+    List<MonsterSO> monsterReources;
 
     void Awake()
     {
         lootResources = new List<LootSO>(Resources.LoadAll<LootSO>("Objects/Loots"));
         characterResources = new List<CharacterSO>(Resources.LoadAll<CharacterSO>("Objects/Characters"));
+        itemResources = new List<ItemSO>(Resources.LoadAll<ItemSO>("Objects/Items"));
+        monsterReources = new List<MonsterSO>(Resources.LoadAll<MonsterSO>("Objects/Monsters"));
     }
 
     // Here to adjust display spacing based on the players' hand cards amount.
     void AdjustHandCard()
     {
         int cardNum = handCard.transform.childCount;
-        float spacing = cardNum>6?(900 - 150 * cardNum) / (cardNum - 1):0;
-        float startPos = cardNum < 6 ? -75 * (cardNum-1): 75;
+        float spacing = cardNum > 6?(900 - 150 * cardNum) / (cardNum - 1):0;
+        float startPos = cardNum <= 6 ? -75 * (cardNum-1): -375;
         for (int i = 0; i < cardNum; i++) {
-            handCard.transform.GetChild(i).GetComponent<LootUIEffect>().OnCardPosXChanged(startPos + i * (150 + spacing));
+            handCard.transform.GetChild(i).GetComponent<LootSelect>().OnCardPosXChanged(startPos + i * (150 + spacing));
         }
     }
 
-    public void CharaterSelectDisplay(int[] options, float timeLimit)
+    public void CharaterSelectDisplay(int[] characterOptions, float timeLimit)
     {
         GameObject CharacterSelection = Instantiate(characterSelectionPrefab, Vector2.zero, Quaternion.identity);
         CharacterSelection.transform.SetParent(table.transform, false);
-        List<CharacterSO> optionResources = characterResources.Where(character => options.Contains(character.characterId)).ToList();
-        CharacterSelection.GetComponent<CharacterSelect>().GeneratePanel(options, optionResources);
+        List<CharacterSO> optionResources = characterResources.Where(character => characterOptions.Contains(character.characterId)).ToList();
+        CharacterSelection.GetComponent<CharacterSelect>().GeneratePanel(optionResources, timeLimit);
     }
 
-    public void SpawnCard(int i)
+
+    public void CharaterSelectDisplay(int[] characterOptions, int[] itemOptions, float timeLimit)
+    {
+        GameObject CharacterSelection = Instantiate(characterSelectionPrefab, Vector2.zero, Quaternion.identity);
+        CharacterSelection.transform.SetParent(table.transform, false);
+        List<CharacterSO> optionResources = characterResources.Where(character => characterOptions.Contains(character.characterId)).ToList();
+        List<ItemSO> itemResources = this.itemResources.Where(item => itemOptions.Contains(item.itemId)).ToList();
+        CharacterSelection.GetComponent<CharacterSelect>().GeneratePanel(optionResources, itemResources, timeLimit);
+    }
+
+    public GameObject SpawnLoot(int i)
     {
         LootSO lootResource = lootResources.Find(loot => loot.lootId == i);
         GameObject loot = Instantiate(lootPrefab, Vector2.zero, Quaternion.identity);
         loot.transform.SetParent(handCard.transform, false);
         loot.GetComponent<Loot>().lootSO = lootResource;
         AdjustHandCard();
+        return loot;
+    }
+
+    public GameObject SpawnItem(int i) {
+        ItemSO itemResource = itemResources.Find(item => item.itemId == i);
+        GameObject item = Instantiate(itemPrefab, Vector2.zero, Quaternion.identity);
+        item.transform.SetParent(itemList.transform, false);
+        item.GetComponent<Item>().itemSO = itemResource;
+        return item;
     }
 
     public GameObject SpawnPlayerDisplay(PlayerManager player)
@@ -67,6 +93,16 @@ public class UIManager : MonoBehaviour
             gamePlayerDisplay.transform.SetParent(enemyArea.transform, false);
         }
         return gamePlayerDisplay;
+    }
+
+    public void OnTurnStatusUpdate(PlayerManager player) {
+        if (player.isSelfTurn)
+        {
+            timer.GetComponent<TimerScript>().StartCountdown(60);
+        }
+        else {
+            timer.GetComponent<Text>().text = "Your turn end";
+        }
     }
 
     public void OnCharacterUpdate(PlayerManager player) {
@@ -92,14 +128,15 @@ public class UIManager : MonoBehaviour
         player.gamePlayerDisplay.GetComponent<GamePlayerDisplay>().soulsText.text = player.souls.ToString();
     }
 
-    public void OnActivatedUpdate(GameObject card) {
-        StartCoroutine(RotateCard(card));
+    public void OnActivatedUpdate(GameObject card, bool isActivated) {
+        StartCoroutine(RotateCard(card, isActivated));
     }
-    private IEnumerator RotateCard(GameObject card)
+
+    IEnumerator RotateCard(GameObject card, bool isActivated)
     {
         float elapsedTime = 0f;
         Vector3 originalRotation = card.transform.eulerAngles;
-        Quaternion targetRotation = Quaternion.Euler(originalRotation.x, originalRotation.y, originalRotation.z + 90f);
+        Quaternion targetRotation = isActivated ? Quaternion.Euler(originalRotation.x, originalRotation.y, originalRotation.z + 90f) : Quaternion.Euler(Vector3.zero);
         while (elapsedTime < hoverDuration)
         {
             card.transform.localScale = Vector3.Lerp(card.transform.localScale, Vector3.one, elapsedTime / hoverDuration);

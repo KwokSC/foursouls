@@ -8,7 +8,7 @@ public class ActivateHoverEffect : MonoBehaviour
     public float hoverDuration = 0.5f;
     private Vector3 originalScale;
     private IEnumerator currentHoverCoroutine;
-    bool isActivated = false;
+    public bool isActivated;
 
     private void Start()
     {
@@ -16,9 +16,11 @@ public class ActivateHoverEffect : MonoBehaviour
         switch (name) {
             case "Avatar":
                 player = transform.parent.GetComponent<GamePlayerDisplay>().player;
+                isActivated = player.isActivated;
                 break;
             case "Item":
                 player = GetComponent<Item>().player;
+                isActivated = GetComponent<Item>().isActivated;
                 break;
         }
     }
@@ -63,10 +65,9 @@ public class ActivateHoverEffect : MonoBehaviour
                     player.CmdActivateCharacter();
                     break;
                 case "Item":
-                    player.CmdActivateObject(gameObject);
+                    player.CmdActivateItem(gameObject);
                     break;
             }
-            isActivated = true;
         }
     }
 

@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class LootUIEffect : MonoBehaviour
+public class LootSelect : MonoBehaviour
 {
     private Vector3 originalLocalPosition;
     private IEnumerator currentHoverCoroutine;

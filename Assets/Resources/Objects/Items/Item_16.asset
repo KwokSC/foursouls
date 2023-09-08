@@ -16,4 +16,5 @@ MonoBehaviour:
   itemName: Swallowed Penny
   sprite: {fileID: 21300000, guid: 134942c6606444e4aaf2fad01927c640, type: 3}
   isPassive: 1
-  isEternal: 0
+  type: 2
+  effects: []

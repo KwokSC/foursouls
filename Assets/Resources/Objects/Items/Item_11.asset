@@ -16,4 +16,5 @@ MonoBehaviour:
   itemName: Broken Ankh
   sprite: {fileID: 21300000, guid: b5277f5ede15b4a28aad962501c708c1, type: 3}
   isPassive: 1
-  isEternal: 0
+  type: 2
+  effects: []

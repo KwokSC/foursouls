@@ -16,4 +16,5 @@ MonoBehaviour:
   itemName: Golden Horseshoe
   sprite: {fileID: 21300000, guid: 6bd4ee787e3be4982b3a3e5cb93b5e9d, type: 3}
   isPassive: 1
-  isEternal: 0
+  type: 2
+  effects: []

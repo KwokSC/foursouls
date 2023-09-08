@@ -17,3 +17,5 @@ MonoBehaviour:
   sprite: {fileID: 21300000, guid: 7731b79d811654f62b2a7b2d5eac4ea8, type: 3}
   attack: 1
   health: 2
+  isActive: 0
+  eternal: 8

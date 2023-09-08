@@ -16,4 +16,5 @@ MonoBehaviour:
   itemName: Guppy's Hairball
   sprite: {fileID: 21300000, guid: 4b742e23895fe4f35826457fa4c8b50d, type: 3}
   isPassive: 1
-  isEternal: 0
+  type: 2
+  effects: []

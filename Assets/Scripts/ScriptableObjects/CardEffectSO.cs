@@ -9,7 +9,7 @@ public class CardEffectSO : ScriptableObject
     [SerializeReference]
     public ICardEffect effect;
 
-    public void ExecuteEffects()
+    public void ExecuteEffect()
     {
         effect.ExecuteEffect();
     }

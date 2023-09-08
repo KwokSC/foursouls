@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Mirror;
 
@@ -7,22 +8,30 @@ public class GameManager : NetworkBehaviour
 {
     List<int> lootDeck = new();
     List<int> characterDeck = new();
-    List<int> discardDeck = new();
+    List<int> monsterDeck = new();
+    List<int> treasureDeck = new();
+    List<int> discardLootDeck = new();
+    List<int> discardMonsterDeck = new();
+    List<int> discardTreasureDeck = new();
 
-    public List<PlayerManager> playerList = new List<PlayerManager>();
+    public List<PlayerManager> playerList = new();
     public PlayerManager localPlayer;
     public PlayerManager winner;
 
     public UIManager UIManager;
     public AudioManager AudioManager;
+    public BehaviourManager BehaviourManager;
+
+    IEnumerator gameProcess;
+    IEnumerator currentGameStage;
+    IEnumerator currentPlayerTurn;
 
     public enum GameState
     {
         ServerInitialization,
         WaitingForPlayers,
         CharacterSelection,
-        InGame,
-        EndGame
+        InGame
     }
 
     int startIndex = -1;
@@ -36,12 +45,13 @@ public class GameManager : NetworkBehaviour
     [SyncVar(hook = nameof(OnEndGameChanged))]
     public bool isGameOver = false;
 
-    public float characterSelectionDuration = 15f;
+    public float characterSelectionDuration = 20f;
     public float roundDuration = 60f;
 
     [Server]
     public override void OnStartServer()
     {
+        if (gameProcess != null) { StopCoroutine(gameProcess); gameProcess = null; };
         StartCoroutine(GameProcess());
     }
 
@@ -50,7 +60,6 @@ public class GameManager : NetworkBehaviour
     public void OnCurrentPlayerChanged(int oldPlayer, int newPlayer)
     {
         Debug.Log("Now is " + playerList[currentPlayerIndex].playerName + "'s turn.");
-        playerList[currentPlayerIndex].isSelfTurn = true;
     }
 
     public void OnGameStateChanged(GameState oldState, GameState newState)
@@ -60,7 +69,12 @@ public class GameManager : NetworkBehaviour
 
     public void OnEndGameChanged(bool oldStatus, bool newStatus)
     {
-        DeclareVictory(winner.playerName);
+        if (gameProcess != null)
+        {
+            StopCoroutine(gameProcess);
+            gameProcess = null;
+        }
+        RpcDeclareVictory(winner.playerName);
     }
 
     #endregion
@@ -88,6 +102,31 @@ public class GameManager : NetworkBehaviour
             characterDeck.Add(characterResources[i].characterId);
         }
         ShuffleDeck(characterDeck);
+    }
+
+    [Server]
+    void InitializeMonsterDeck()
+    {
+        MonsterSO[] monsterResources = Resources.LoadAll<MonsterSO>("Objects/Monsters");
+        for (int i = 0; i < monsterResources.Length; i++)
+        {
+            monsterDeck.Add(monsterResources[i].monsterId);
+        }
+        ShuffleDeck(monsterDeck);
+    }
+
+    [Server]
+    void InitializeTreasureDeck()
+    {
+        ItemSO[] itemResources = Resources.LoadAll<ItemSO>("Objects/Items");
+        for (int i = 0; i < itemResources.Length; i++)
+        {
+            if (itemResources[i].type == ItemSO.ItemType.Treasure) {
+                treasureDeck.Add(itemResources[i].itemId);
+            }
+        }
+        Debug.Log(treasureDeck.Count);
+        ShuffleDeck(treasureDeck);
     }
 
     [Server]
@@ -121,7 +160,7 @@ public class GameManager : NetworkBehaviour
         {
             if (connection.isReady)
             {
-                WaitingForOtherPlayers(connection, count);
+                TargetWaitingForOtherPlayers(connection, count);
             }
         }
         return isReady;
@@ -133,26 +172,47 @@ public class GameManager : NetworkBehaviour
         int i = 0;
         foreach (NetworkConnectionToClient connection in NetworkServer.connections.Values)
         {
-            int[] options = characterDeck.GetRange(i, 3).ToArray();
-            TargetSendCharacterOptions(connection, options, selectionTimeLimit);
+            int[] characterOptions = characterDeck.GetRange(i, 3).ToArray();
+            if (characterOptions.Contains(3))
+            {
+                TargetSendCharacterOptions(connection, characterOptions, treasureDeck.GetRange(0,3).ToArray(), selectionTimeLimit);
+                treasureDeck.RemoveRange(0,3);
+            }
+            else {
+                TargetSendCharacterOptions(connection, characterOptions, selectionTimeLimit);
+            }
             i += 3;
         }
     }
 
     [Server]
-    bool CheckPlayerCharacter()
+    bool CheckPlayerReady()
     {
         foreach (PlayerManager player in playerList)
         {
-            if (player.characterId == -1) return false;
+            return player.isReady;
         }
         return true;
+    }
+
+    [Server]
+    void SendHandCard(NetworkConnection connection, int num) {
+        if (num > 1)
+        {
+            TargetSendHandCard(connection, lootDeck.GetRange(0, num).ToArray());
+            lootDeck.RemoveRange(0, num);
+        }
+        else {
+            TargetSendHandCard(connection, lootDeck[0]);
+            lootDeck.RemoveAt(0);
+        }
     }
 
     [Server]
     void InitializeGame()
     {
 
+        // Determine which player to start
         foreach (PlayerManager player in playerList)
         {
             if (player.characterId == 2)
@@ -162,23 +222,23 @@ public class GameManager : NetworkBehaviour
 
             if (lootDeck.Count > 0)
             {
-                SendHandCard(player.netIdentity.connectionToClient, lootDeck.GetRange(0, 5).ToArray());
-                lootDeck.RemoveRange(0, 5);
+                SendHandCard(player.netIdentity.connectionToClient, 5);
             }
         }
         if (startIndex == -1)
             startIndex = Random.Range(0, playerList.Count);
 
+        // Rotate all players except the start player so that they can't deal cards.
+        foreach (PlayerManager player in playerList)
+        {
+            if (playerList.IndexOf(player) != startIndex) player.isActivated = true;
+        }
         currentPlayerIndex = startIndex;
         playerList[currentPlayerIndex].isSelfTurn = true;
 
-        Debug.Log("The game will start from Player " + playerList[startIndex].playerName + " and clockwisely process.");
-    }
+        // TODO: Monster and Treasure Deck Initialization
 
-    [Server]
-    bool CheckTurnEnd(PlayerManager player)
-    {
-        return player.isSelfTurn;
+        Debug.Log("The game will start from Player " + playerList[startIndex].playerName + " and clockwisely process.");
     }
 
     [Server]
@@ -199,13 +259,13 @@ public class GameManager : NetworkBehaviour
     #region rpc functions
 
     [TargetRpc]
-    void WaitingForOtherPlayers(NetworkConnection connection, int count)
+    void TargetWaitingForOtherPlayers(NetworkConnection connection, int count)
     {
         Debug.Log("Waiting for other " + count + " players.");
     }
 
     [ClientRpc]
-    void AssignLocalPlayerManager()
+    void RpcAssignLocalPlayerManager()
     {
         GameObject[] playerObjects = GameObject.FindGameObjectsWithTag("GamePlayer");
         foreach (GameObject playerObject in playerObjects)
@@ -217,8 +277,10 @@ public class GameManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    void SpawnGamePlayerDisplay() {
-        foreach (PlayerManager player in playerList) {
+    void RpcSpawnGamePlayerDisplay()
+    {
+        foreach (PlayerManager player in playerList)
+        {
             player.gamePlayerDisplay = UIManager.SpawnPlayerDisplay(player);
         }
     }
@@ -226,42 +288,72 @@ public class GameManager : NetworkBehaviour
     [TargetRpc]
     void TargetSendCharacterOptions(NetworkConnection connection, int[] options, float selectionTimeLimit)
     {
-        Debug.Log(localPlayer.playerName+"'s character options are: " +string.Join(",", options));
         UIManager.CharaterSelectDisplay(options, selectionTimeLimit);
     }
 
+
+    [TargetRpc]
+    void TargetSendCharacterOptions(NetworkConnection connection, int[] characterOptions, int[] itemOptions, float selectionTimeLimit)
+    {
+        UIManager.CharaterSelectDisplay(characterOptions, itemOptions, selectionTimeLimit);
+    }
+
     [ClientRpc]
-    void ForceSelectCharacter()
+    void RpcForceSelectCharacter()
     {
         GameObject characterSelection = GameObject.FindGameObjectWithTag("CharacterSelection");
         if (localPlayer.characterId == -1)
         {
-            localPlayer.CmdSetupCharacter(characterSelection.GetComponent<CharacterSelect>().RandomSelect());
+            int character = characterSelection.GetComponent<CharacterSelect>().RandomSelectCharacter();
+            if (character == 3)
+            {
+                int eternal = characterSelection.GetComponent<CharacterSelect>().RandomSelectEternal();
+                localPlayer.CmdSetupCharacter(character, eternal);
+            }
+            else {
+                CharacterSO characterSO = Resources.Load<CharacterSO>("Objects/Characters/Character_"+character);
+                localPlayer.CmdSetupCharacter(character, characterSO.eternal);
+            }
         }
-
+        localPlayer.CmdPlayerReady();
         Destroy(characterSelection);
     }
 
     [ClientRpc]
-    void EndSelection()
+    void RpcEndSelection()
     {
         GameObject characterSelection = GameObject.FindGameObjectWithTag("CharacterSelection");
         Destroy(characterSelection);
     }
 
     [TargetRpc]
-    void SendHandCard(NetworkConnection connection, int[] cardList)
+    void TargetSendHandCard(NetworkConnection connection, int[] cardList)
     {
         localPlayer.DrawCard(cardList);
     }
 
     [TargetRpc]
-    void ForceEndTurn(NetworkConnection connection) { 
+    void TargetSendHandCard(NetworkConnection connection, int card) {
+        localPlayer.DrawCard(card);
+    }
+
+    [TargetRpc]
+    void TargetInitializePlayerTurn(NetworkConnection connection)
+    {
+        localPlayer.isActivated = false;
+        localPlayer.isSelfTurn = true;
+        localPlayer.dealTimes = localPlayer.availableDeals;
+        localPlayer.attackTimes = localPlayer.availableAttack;
+    }
+
+    [TargetRpc]
+    void TargetEndPlayerTurn(NetworkConnection connection)
+    {
         localPlayer.isSelfTurn = false;
     }
 
     [ClientRpc]
-    void DeclareVictory(string winner)
+    void RpcDeclareVictory(string winner)
     {
         Debug.Log("The game is over, the winner is " + winner);
     }
@@ -272,25 +364,39 @@ public class GameManager : NetworkBehaviour
 
     IEnumerator GameProcess()
     {
-        yield return StartCoroutine(ServerResourcesInitialization());
+        if (currentGameStage != null) { StopCoroutine(currentGameStage); currentGameStage = null; }
+        currentGameStage = ServerResourcesInitialization();
+        yield return StartCoroutine(currentGameStage);
         gameState = GameState.WaitingForPlayers;
-        yield return StartCoroutine(WaitForAllPlayersToLoadScene());
+
+        if (currentGameStage != null) { StopCoroutine(currentGameStage); currentGameStage = null; }
+        currentGameStage = WaitForAllPlayersToLoadScene();
+        yield return StartCoroutine(currentGameStage);
         gameState = GameState.CharacterSelection;
-        yield return StartCoroutine(CharacterSelectionPhase());
+
+        if (currentGameStage != null) { StopCoroutine(currentGameStage); currentGameStage = null; }
+        currentGameStage = CharacterSelectionPhase();
+        yield return StartCoroutine(currentGameStage);
         gameState = GameState.InGame;
-        yield return StartCoroutine(StartGame());
+
+        if (currentGameStage != null) { StopCoroutine(currentGameStage); currentGameStage = null; }
+        currentGameStage = InGame();
+        yield return StartCoroutine(currentGameStage);
+
     }
 
     IEnumerator ServerResourcesInitialization()
     {
         InitializeLootDeck();
         InitializeCharacterDeck();
+        InitializeMonsterDeck();
+        InitializeTreasureDeck();
         yield return null;
     }
 
     IEnumerator WaitForAllPlayersToLoadScene()
     {
-        AssignLocalPlayerManager();
+        RpcAssignLocalPlayerManager();
         while (!CheckClientReady() && localPlayer == null) Debug.Log("Waiting...");
         yield return null;
     }
@@ -298,22 +404,22 @@ public class GameManager : NetworkBehaviour
     IEnumerator CharacterSelectionPhase()
     {
         GenerateCharacterOptions(characterSelectionDuration);
-        SpawnGamePlayerDisplay();
+        RpcSpawnGamePlayerDisplay();
         float countdownTimer = characterSelectionDuration;
         while (countdownTimer > 0)
         {
-            if (CheckPlayerCharacter())
+            if (CheckPlayerReady())
             {
-                EndSelection();
+                RpcEndSelection();
                 yield break;
             }
             countdownTimer -= Time.deltaTime;
             yield return null;
         }
-        ForceSelectCharacter();
+        RpcForceSelectCharacter();
     }
 
-    IEnumerator StartGame()
+    IEnumerator InGame()
     {
         InitializeGame();
         while (!isGameOver)
@@ -326,17 +432,21 @@ public class GameManager : NetworkBehaviour
 
     IEnumerator PlayerTurn(PlayerManager player)
     {
+        NetworkConnection currentPlayerConnection = player.netIdentity.connectionToClient;
+        TargetInitializePlayerTurn(currentPlayerConnection);
+        SendHandCard(currentPlayerConnection, 1);
         float roundTimer = roundDuration;
         while (roundTimer > 0)
         {
-            if (!CheckTurnEnd(player))
+            if (!player.isSelfTurn)
             {
                 yield break;
             }
             roundTimer -= Time.deltaTime;
             yield return null;
         }
-        player.isSelfTurn = false;
+        TargetEndPlayerTurn(currentPlayerConnection);
+
     }
     #endregion
 

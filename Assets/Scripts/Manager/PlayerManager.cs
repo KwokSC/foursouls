@@ -5,10 +5,14 @@ using Mirror;
 
 public class PlayerManager : NetworkBehaviour
 {
-    public enum PlayerState {
+    public enum PlayerState
+    {
         Idle,
+        Dead,
         Attack,
-        Dead
+        Toss,
+        Select,
+        Discard
     }
 
     [SyncVar]
@@ -29,6 +33,9 @@ public class PlayerManager : NetworkBehaviour
     [SyncVar(hook = nameof(OnSoulsChanged))]
     public int souls = 0;
 
+    [SyncVar(hook = nameof(OnReadyChanged))]
+    public bool isReady = false;
+
     [SyncVar(hook = nameof(OnTurnStatusChanged))]
     public bool isSelfTurn;
 
@@ -40,9 +47,14 @@ public class PlayerManager : NetworkBehaviour
 
     public GameObject gamePlayerDisplay;
 
-    List<int> handCardList = new();
-    List<int> itemList = new();
-    int availableDeals = 0;
+    public List<int> handCardList = new();
+    public List<int> itemList = new();
+    List<GameObject> lootObjects = new();
+    List<GameObject> itemGameObjects = new();
+    public int dealTimes = 0;
+    public int attackTimes = 0;
+    public int availableDeals = 1;
+    public int availableAttack = 1;
 
     GameManager GameManager;
     UIManager UIManager;
@@ -73,25 +85,32 @@ public class PlayerManager : NetworkBehaviour
         UIManager.OnCoinsUpdate(this);
     }
 
-    public void OnSoulsChanged(int oldSouls, int newSouls) 
+    public void OnSoulsChanged(int oldSouls, int newSouls)
     {
         UIManager.OnSoulsUpdate(this);
     }
 
-    public void OnActivatedChanged(bool oldStatue, bool newStatus) {
-        UIManager.OnActivatedUpdate(gamePlayerDisplay.transform.Find("Avatar").gameObject);
-        Debug.Log(playerName + "Activate Status Change");
-    }
-
-    public void OnTurnStatusChanged(bool oldStatus, bool newStatus) {
+    public void OnReadyChanged(bool oldStatus, bool newStatus) {
 
     }
 
-    public void OnStateChanged(PlayerState oldState, PlayerState newState) { 
+    public void OnActivatedChanged(bool oldStatus, bool newStatus)
+    {
+        UIManager.OnActivatedUpdate(gamePlayerDisplay.transform.Find("Avatar").gameObject, isActivated);
+    }
+
+    public void OnTurnStatusChanged(bool oldStatus, bool newStatus)
+    {
+        UIManager.OnTurnStatusUpdate(this);
+    }
+
+    public void OnStateChanged(PlayerState oldState, PlayerState newState)
+    {
 
     }
 
-    public void SetupPlayer(RoomPlayerManager roomPlayer) {
+    public void SetupPlayer(RoomPlayerManager roomPlayer)
+    {
         playerName = roomPlayer.playerName;
         playerState = PlayerState.Idle;
     }
@@ -102,7 +121,7 @@ public class PlayerManager : NetworkBehaviour
         handCardList.AddRange(cardList);
         foreach (int id in cardList)
         {
-            UIManager.SpawnCard(id);
+            lootObjects.Add(UIManager.SpawnLoot(id));
         }
     }
 
@@ -110,57 +129,73 @@ public class PlayerManager : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
         handCardList.Add(card);
-        UIManager.SpawnCard(card);
+        lootObjects.Add(UIManager.SpawnLoot(card));
     }
 
     #region command
     [Command]
-    public void CmdSetupCharacter(int id) {
-        characterId = id;
+    public void CmdPlayerReady() {
+        isReady = true;
     }
 
     [Command]
-    public void CmdDealCard(GameObject loot) {
-        if (!isLocalPlayer && availableDeals == 0) return;
+    public void CmdSetupCharacter(int character, int item)
+    {
+        characterId = character;
+    }
+
+    [Command]
+    public void CmdSetupEternal(int item) {
+        UIManager.SpawnItem(item);
+    }
+
+    [Command]
+    public void CmdDealCard(GameObject loot)
+    {
+        if (dealTimes == 0) return;
         Loot lootComponent = loot.GetComponent<Loot>();
         lootComponent.ExecuteEffect();
         handCardList.Remove(lootComponent.lootId);
     }
 
     [Command]
-    public void CmdDealCard(GameObject loot, GameObject target) {
-        if (!isLocalPlayer && availableDeals==0) return;
+    public void CmdDealCard(GameObject loot, GameObject target)
+    {
         Loot lootComponent = loot.GetComponent<Loot>();
         lootComponent.ExecuteEffect();
         handCardList.Remove(lootComponent.lootId);
     }
 
     [Command]
-    public void CmdActivateObject(GameObject target) {
-        if (!isLocalPlayer) return;
-        target.GetComponent<Item>().ExecuteEffect();
-    }
-
-    [Command]
-    public void CmdActivateCharacter() {
+    public void CmdActivateCharacter()
+    {
         isActivated = true;
+        dealTimes += 1;
     }
 
     [Command]
-    public void CmdPurchase(GameObject treasure) {
-        if (!isLocalPlayer) return;
+    public void CmdActivateItem(GameObject item)
+    {
+        if (isLocalPlayer) return;
+        item.GetComponent<Item>().ExecuteEffect();
     }
 
     [Command]
-    public void CmdAttackMonster(GameObject monster) {
-        if (!isLocalPlayer) return;
+    public void CmdActivatedItem(GameObject item, GameObject target) {
+
     }
 
     [Command]
-    public void CmdMoneyChange(int money) { 
+    public void CmdAttackMonster(GameObject monster)
+    {
+
+    }
+
+    [Command]
+    public void CmdMoneyChange(int money)
+    {
         if (!isLocalPlayer) return;
         coins += money;
-        UIManager.OnCoinsUpdate(this);
     }
 
     #endregion

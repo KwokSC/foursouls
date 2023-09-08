@@ -8,7 +8,6 @@ public class LootSO : ScriptableObject
     public int lootId;
     public string lootName;
     public int amount;
-    public bool isItem;
     public Sprite sprite;
-    public List<CardEffectSO> effects;
+    public CardEffectSO effect;
 }
