@@ -23,8 +23,10 @@ public class CharacterSelect : MonoBehaviour
         GameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
     }
 
-    void Update() {
-        if (character != -1 && item != -1) {
+    void Update()
+    {
+        if (!GameManager.localPlayer.isReady && character != -1 && item != -1)
+        {
             GameManager.localPlayer.CmdSetupCharacter(character, item);
             GameManager.localPlayer.CmdPlayerReady();
         }

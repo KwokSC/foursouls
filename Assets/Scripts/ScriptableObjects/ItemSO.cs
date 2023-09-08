@@ -15,5 +15,5 @@ public class ItemSO: ScriptableObject
     public Sprite sprite;
     public bool isPassive;
     public ItemType type;
-    public List<CardEffectSO> effects;
+    public CardEffectSO effect;
 }

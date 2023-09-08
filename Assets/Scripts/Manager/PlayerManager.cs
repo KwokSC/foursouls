@@ -49,8 +49,10 @@ public class PlayerManager : NetworkBehaviour
 
     public List<int> handCardList = new();
     public List<int> itemList = new();
+
     List<GameObject> lootObjects = new();
-    List<GameObject> itemGameObjects = new();
+    List<GameObject> itemObjects = new();
+
     public int dealTimes = 0;
     public int attackTimes = 0;
     public int availableDeals = 1;
@@ -78,6 +80,7 @@ public class PlayerManager : NetworkBehaviour
     public void OnHealthChanged(int oldHealth, int newHealth)
     {
         UIManager.OnHealthUpdate(this);
+        if (health <= 0) playerState = PlayerState.Dead;
     }
 
     public void OnCoinsChanged(int oldCoins, int newCoins)
@@ -115,23 +118,6 @@ public class PlayerManager : NetworkBehaviour
         playerState = PlayerState.Idle;
     }
 
-    public void DrawCard(int[] cardList)
-    {
-        if (!isLocalPlayer) return;
-        handCardList.AddRange(cardList);
-        foreach (int id in cardList)
-        {
-            lootObjects.Add(UIManager.SpawnLoot(id));
-        }
-    }
-
-    public void DrawCard(int card)
-    {
-        if (!isLocalPlayer) return;
-        handCardList.Add(card);
-        lootObjects.Add(UIManager.SpawnLoot(card));
-    }
-
     #region command
     [Command]
     public void CmdPlayerReady() {
@@ -142,11 +128,28 @@ public class PlayerManager : NetworkBehaviour
     public void CmdSetupCharacter(int character, int item)
     {
         characterId = character;
+        itemObjects.Add(UIManager.SpawnItem(item));
     }
 
     [Command]
-    public void CmdSetupEternal(int item) {
-        UIManager.SpawnItem(item);
+    public void CmdDrawCard(int[] cardList)
+    {
+        handCardList.AddRange(cardList);
+
+        if (!isLocalPlayer) return;
+        foreach (int id in cardList)
+        {
+            lootObjects.Add(UIManager.SpawnLoot(id));
+        }
+    }
+
+    [Command]
+    public void CmdDrawCard(int card)
+    {
+        handCardList.Add(card);
+
+        if (!isLocalPlayer) return;
+        lootObjects.Add(UIManager.SpawnLoot(card));
     }
 
     [Command]
@@ -162,7 +165,7 @@ public class PlayerManager : NetworkBehaviour
     public void CmdDealCard(GameObject loot, GameObject target)
     {
         Loot lootComponent = loot.GetComponent<Loot>();
-        lootComponent.ExecuteEffect();
+        lootComponent.ExecuteEffect(target);
         handCardList.Remove(lootComponent.lootId);
     }
 
@@ -176,13 +179,13 @@ public class PlayerManager : NetworkBehaviour
     [Command]
     public void CmdActivateItem(GameObject item)
     {
-        if (isLocalPlayer) return;
         item.GetComponent<Item>().ExecuteEffect();
     }
 
     [Command]
-    public void CmdActivatedItem(GameObject item, GameObject target) {
-
+    public void CmdActivatedItem(GameObject item, GameObject target)
+    {
+        item.GetComponent<Item>().ExecuteEffect(target);
     }
 
     [Command]

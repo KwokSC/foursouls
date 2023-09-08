@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class UIManager : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class UIManager : MonoBehaviour
     public GameObject characterDisplay;
     public GameObject enemyArea;
     public GameObject timer;
+    public TextMeshProUGUI broadcast;
 
     public GameObject dicePrefab;
     public GameObject lootPrefab;
@@ -38,11 +40,16 @@ public class UIManager : MonoBehaviour
     void AdjustHandCard()
     {
         int cardNum = handCard.transform.childCount;
-        float spacing = cardNum > 6?(900 - 150 * cardNum) / (cardNum - 1):0;
-        float startPos = cardNum <= 6 ? -75 * (cardNum-1): -375;
-        for (int i = 0; i < cardNum; i++) {
+        float spacing = cardNum > 4 ? (600 - 150 * cardNum) / (cardNum - 1) : 0;
+        float startPos = cardNum <= 4 ? -75 * (cardNum - 1) : -225;
+        for (int i = 0; i < cardNum; i++)
+        {
             handCard.transform.GetChild(i).GetComponent<LootSelect>().OnCardPosXChanged(startPos + i * (150 + spacing));
         }
+    }
+
+    public void AddBroadCast(string msg) {
+        broadcast.text += "\n" + msg;
     }
 
     public void CharaterSelectDisplay(int[] characterOptions, float timeLimit)
@@ -73,7 +80,8 @@ public class UIManager : MonoBehaviour
         return loot;
     }
 
-    public GameObject SpawnItem(int i) {
+    public GameObject SpawnItem(int i)
+    {
         ItemSO itemResource = itemResources.Find(item => item.itemId == i);
         GameObject item = Instantiate(itemPrefab, Vector2.zero, Quaternion.identity);
         item.transform.SetParent(itemList.transform, false);
@@ -86,52 +94,64 @@ public class UIManager : MonoBehaviour
         GameObject gamePlayerDisplay = Instantiate(gamePlayerDisplayPrefab, Vector3.zero, Quaternion.identity);
         gamePlayerDisplay.GetComponent<GamePlayerDisplay>().playerName.text = player.playerName;
         gamePlayerDisplay.GetComponent<GamePlayerDisplay>().player = player;
-        if (player.isLocalPlayer) {
+        if (player.isLocalPlayer)
+        {
             gamePlayerDisplay.transform.SetParent(characterDisplay.transform, false);
         }
-        else {
+        else
+        {
             gamePlayerDisplay.transform.SetParent(enemyArea.transform, false);
         }
         return gamePlayerDisplay;
     }
 
-    public void OnTurnStatusUpdate(PlayerManager player) {
+    public void OnTurnStatusUpdate(PlayerManager player)
+    {
         if (player.isSelfTurn)
         {
             timer.GetComponent<TimerScript>().StartCountdown(60);
         }
-        else {
+        else
+        {
             timer.GetComponent<Text>().text = "Your turn end";
         }
     }
 
-    public void OnCharacterUpdate(PlayerManager player) {
+    public void OnCharacterUpdate(PlayerManager player)
+    {
         CharacterSO character = characterResources.Find(c => c.characterId == player.characterId);
         player.gamePlayerDisplay.GetComponent<GamePlayerDisplay>().characterImg.sprite = character.sprite;
         player.gamePlayerDisplay.GetComponent<GamePlayerDisplay>().attackText.text = character.attack.ToString();
         player.gamePlayerDisplay.GetComponent<GamePlayerDisplay>().healthText.text = character.health.ToString();
     }
 
-    public void OnAttackUpdate(PlayerManager player) {
+    public void OnAttackUpdate(PlayerManager player)
+    {
         player.gamePlayerDisplay.GetComponent<GamePlayerDisplay>().attackText.text = player.attack.ToString();
     }
 
-    public void OnHealthUpdate(PlayerManager player) {
+    public void OnHealthUpdate(PlayerManager player)
+    {
         player.gamePlayerDisplay.GetComponent<GamePlayerDisplay>().healthText.text = player.health.ToString();
     }
 
-    public void OnCoinsUpdate(PlayerManager player) {
+    public void OnCoinsUpdate(PlayerManager player)
+    {
         player.gamePlayerDisplay.GetComponent<GamePlayerDisplay>().coinsText.text = player.coins.ToString();
     }
 
-    public void OnSoulsUpdate(PlayerManager player) {
+    public void OnSoulsUpdate(PlayerManager player)
+    {
         player.gamePlayerDisplay.GetComponent<GamePlayerDisplay>().soulsText.text = player.souls.ToString();
     }
 
-    public void OnActivatedUpdate(GameObject card, bool isActivated) {
+    public void OnActivatedUpdate(GameObject card, bool isActivated)
+    {
         StartCoroutine(RotateCard(card, isActivated));
     }
 
+
+    #region ienumerator
     IEnumerator RotateCard(GameObject card, bool isActivated)
     {
         float elapsedTime = 0f;
@@ -147,4 +167,5 @@ public class UIManager : MonoBehaviour
         card.transform.localScale = Vector3.one;
         card.transform.rotation = targetRotation;
     }
+    #endregion
 }

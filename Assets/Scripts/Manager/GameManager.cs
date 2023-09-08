@@ -24,7 +24,6 @@ public class GameManager : NetworkBehaviour
 
     IEnumerator gameProcess;
     IEnumerator currentGameStage;
-    IEnumerator currentPlayerTurn;
 
     public enum GameState
     {
@@ -37,7 +36,7 @@ public class GameManager : NetworkBehaviour
     int startIndex = -1;
 
     [SyncVar(hook = nameof(OnCurrentPlayerChanged))]
-    public int currentPlayerIndex;
+    public int currentPlayerIndex = -1;
 
     [SyncVar(hook = nameof(OnGameStateChanged))]
     public GameState gameState = GameState.ServerInitialization;
@@ -59,12 +58,12 @@ public class GameManager : NetworkBehaviour
 
     public void OnCurrentPlayerChanged(int oldPlayer, int newPlayer)
     {
-        Debug.Log("Now is " + playerList[currentPlayerIndex].playerName + "'s turn.");
+        UIManager.AddBroadCast("Now is " + playerList[currentPlayerIndex].playerName + "'s turn.");
     }
 
     public void OnGameStateChanged(GameState oldState, GameState newState)
     {
-        Debug.Log("Now the game state is " + this.gameState);
+        UIManager.AddBroadCast("Now the game state is " + this.gameState);
     }
 
     public void OnEndGameChanged(bool oldStatus, bool newStatus)
@@ -125,7 +124,6 @@ public class GameManager : NetworkBehaviour
                 treasureDeck.Add(itemResources[i].itemId);
             }
         }
-        Debug.Log(treasureDeck.Count);
         ShuffleDeck(treasureDeck);
     }
 
@@ -261,7 +259,7 @@ public class GameManager : NetworkBehaviour
     [TargetRpc]
     void TargetWaitingForOtherPlayers(NetworkConnection connection, int count)
     {
-        Debug.Log("Waiting for other " + count + " players.");
+        UIManager.AddBroadCast("Waiting for other " + count + " players.");
     }
 
     [ClientRpc]
@@ -329,12 +327,12 @@ public class GameManager : NetworkBehaviour
     [TargetRpc]
     void TargetSendHandCard(NetworkConnection connection, int[] cardList)
     {
-        localPlayer.DrawCard(cardList);
+        localPlayer.CmdDrawCard(cardList);
     }
 
     [TargetRpc]
     void TargetSendHandCard(NetworkConnection connection, int card) {
-        localPlayer.DrawCard(card);
+        localPlayer.CmdDrawCard(card);
     }
 
     [TargetRpc]
@@ -355,7 +353,7 @@ public class GameManager : NetworkBehaviour
     [ClientRpc]
     void RpcDeclareVictory(string winner)
     {
-        Debug.Log("The game is over, the winner is " + winner);
+        UIManager.AddBroadCast("The game is over, the winner is " + winner);
     }
 
     #endregion
