@@ -14,6 +14,11 @@ public class GameManager : NetworkBehaviour
     List<int> discardMonsterDeck = new();
     List<int> discardTreasureDeck = new();
 
+    CharacterSO[] characterResources;
+    MonsterSO[] monsterResources;
+    ItemSO[] itemResources;
+    LootSO[] lootResources;
+
     public List<PlayerManager> playerList = new();
     public PlayerManager localPlayer;
     public PlayerManager winner;
@@ -63,7 +68,7 @@ public class GameManager : NetworkBehaviour
 
     public void OnGameStateChanged(GameState oldState, GameState newState)
     {
-        UIManager.AddBroadCast("Now the game state is " + this.gameState);
+        UIManager.AddBroadCast("Now the game state is " + gameState);
     }
 
     public void OnEndGameChanged(bool oldStatus, bool newStatus)
@@ -83,7 +88,7 @@ public class GameManager : NetworkBehaviour
     [Server]
     void InitializeLootDeck()
     {
-        LootSO[] lootResources = Resources.LoadAll<LootSO>("Objects/Loots");
+        lootResources = Resources.LoadAll<LootSO>("Objects/Loots");
         for (int i = 0; i < lootResources.Length; i++)
         {
             for (int j = 0; j < lootResources[i].amount; j++)
@@ -95,7 +100,7 @@ public class GameManager : NetworkBehaviour
     [Server]
     void InitializeCharacterDeck()
     {
-        CharacterSO[] characterResources = Resources.LoadAll<CharacterSO>("Objects/Characters");
+        characterResources = Resources.LoadAll<CharacterSO>("Objects/Characters");
         for (int i = 0; i < characterResources.Length; i++)
         {
             characterDeck.Add(characterResources[i].characterId);
@@ -106,7 +111,7 @@ public class GameManager : NetworkBehaviour
     [Server]
     void InitializeMonsterDeck()
     {
-        MonsterSO[] monsterResources = Resources.LoadAll<MonsterSO>("Objects/Monsters");
+        monsterResources = Resources.LoadAll<MonsterSO>("Objects/Monsters");
         for (int i = 0; i < monsterResources.Length; i++)
         {
             monsterDeck.Add(monsterResources[i].monsterId);
@@ -117,7 +122,7 @@ public class GameManager : NetworkBehaviour
     [Server]
     void InitializeTreasureDeck()
     {
-        ItemSO[] itemResources = Resources.LoadAll<ItemSO>("Objects/Items");
+        itemResources = Resources.LoadAll<ItemSO>("Objects/Items");
         for (int i = 0; i < itemResources.Length; i++)
         {
             if (itemResources[i].type == ItemSO.ItemType.Treasure) {
@@ -250,6 +255,16 @@ public class GameManager : NetworkBehaviour
                 isGameOver = true;
             }
         }
+    }
+
+    [Server]
+    void SpawnLootOnServer() {
+
+    }
+
+    [Server]
+    void SpawnMonsterOnServer() {
+
     }
 
     #endregion
@@ -444,7 +459,6 @@ public class GameManager : NetworkBehaviour
             yield return null;
         }
         TargetEndPlayerTurn(currentPlayerConnection);
-
     }
     #endregion
 

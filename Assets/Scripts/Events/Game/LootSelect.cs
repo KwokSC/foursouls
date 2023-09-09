@@ -51,7 +51,7 @@ public class LootSelect : MonoBehaviour
         originalLocalPosition.x = x;
     }
 
-    public void OnClicked() { 
+    public void OnClick() { 
         isSelected = !isSelected;
         hoverEnabled = !hoverEnabled;
         if (isSelected) {

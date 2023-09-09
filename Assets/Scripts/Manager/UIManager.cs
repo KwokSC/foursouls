@@ -28,6 +28,8 @@ public class UIManager : MonoBehaviour
     List<ItemSO> itemResources;
     List<MonsterSO> monsterReources;
 
+    public GameManager GameManager;
+
     void Awake()
     {
         lootResources = new List<LootSO>(Resources.LoadAll<LootSO>("Objects/Loots"));
@@ -74,8 +76,8 @@ public class UIManager : MonoBehaviour
     {
         LootSO lootResource = lootResources.Find(loot => loot.lootId == i);
         GameObject loot = Instantiate(lootPrefab, Vector2.zero, Quaternion.identity);
-        loot.transform.SetParent(handCard.transform, false);
         loot.GetComponent<Loot>().lootSO = lootResource;
+        loot.transform.SetParent(handCard.transform, false);
         AdjustHandCard();
         return loot;
     }
@@ -84,8 +86,8 @@ public class UIManager : MonoBehaviour
     {
         ItemSO itemResource = itemResources.Find(item => item.itemId == i);
         GameObject item = Instantiate(itemPrefab, Vector2.zero, Quaternion.identity);
-        item.transform.SetParent(itemList.transform, false);
         item.GetComponent<Item>().itemSO = itemResource;
+        item.transform.SetParent(itemList.transform, false);
         return item;
     }
 
@@ -147,25 +149,6 @@ public class UIManager : MonoBehaviour
 
     public void OnActivatedUpdate(GameObject card, bool isActivated)
     {
-        StartCoroutine(RotateCard(card, isActivated));
+        card.GetComponent<ActivateHoverEffect>().OnIsActivatedChanged(isActivated);
     }
-
-
-    #region ienumerator
-    IEnumerator RotateCard(GameObject card, bool isActivated)
-    {
-        float elapsedTime = 0f;
-        Vector3 originalRotation = card.transform.eulerAngles;
-        Quaternion targetRotation = isActivated ? Quaternion.Euler(originalRotation.x, originalRotation.y, originalRotation.z + 90f) : Quaternion.Euler(Vector3.zero);
-        while (elapsedTime < hoverDuration)
-        {
-            card.transform.localScale = Vector3.Lerp(card.transform.localScale, Vector3.one, elapsedTime / hoverDuration);
-            card.transform.rotation = Quaternion.Slerp(card.transform.rotation, targetRotation, elapsedTime / hoverDuration);
-            elapsedTime += Time.deltaTime;
-            yield return null;
-        }
-        card.transform.localScale = Vector3.one;
-        card.transform.rotation = targetRotation;
-    }
-    #endregion
 }

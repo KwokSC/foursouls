@@ -47,8 +47,8 @@ public class PlayerManager : NetworkBehaviour
 
     public GameObject gamePlayerDisplay;
 
-    public List<int> handCardList = new();
-    public List<int> itemList = new();
+    readonly SyncList<int> handCardList = new();
+    readonly SyncList<int> itemList = new();
 
     List<GameObject> lootObjects = new();
     List<GameObject> itemObjects = new();
@@ -135,8 +135,6 @@ public class PlayerManager : NetworkBehaviour
     public void CmdDrawCard(int[] cardList)
     {
         handCardList.AddRange(cardList);
-
-        if (!isLocalPlayer) return;
         foreach (int id in cardList)
         {
             lootObjects.Add(UIManager.SpawnLoot(id));
@@ -147,8 +145,6 @@ public class PlayerManager : NetworkBehaviour
     public void CmdDrawCard(int card)
     {
         handCardList.Add(card);
-
-        if (!isLocalPlayer) return;
         lootObjects.Add(UIManager.SpawnLoot(card));
     }
 
@@ -156,9 +152,11 @@ public class PlayerManager : NetworkBehaviour
     public void CmdDealCard(GameObject loot)
     {
         if (dealTimes == 0) return;
+        UIManager.AddBroadCast("You don't have enough deal times.");
         Loot lootComponent = loot.GetComponent<Loot>();
         lootComponent.ExecuteEffect();
         handCardList.Remove(lootComponent.lootId);
+        lootObjects.Remove(loot);
     }
 
     [Command]

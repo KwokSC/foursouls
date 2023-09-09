@@ -283,6 +283,7 @@ MonoBehaviour:
   itemPrefab: {fileID: 7687575801074223547, guid: 1eeba49ce20ba4000803c7fd5f44bfc3, type: 3}
   characterSelectionPrefab: {fileID: 8241867739460283098, guid: c2b4b131989e44a8ba45a747bc2d9e39, type: 3}
   gamePlayerDisplayPrefab: {fileID: 5350336116136908414, guid: 6f629c9cd5c1d6c43a3702f416d04382, type: 3}
+  GameManager: {fileID: 1158421958}
 --- !u!114 &163376225
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1040,7 +1041,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4d70f4cc263b49c7b4f80abaaa05257, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameManager: {fileID: 1158421958}
+  GameManager: {fileID: 1158421958}
   handCard: {fileID: 7942073526755715315}
   dealButton: {fileID: 498290104}
   endButton: {fileID: 895517857}
@@ -1562,8 +1563,8 @@ MonoBehaviour:
   m_ChildAlignment: 0
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 60, y: 80}
-  m_Spacing: {x: 0, y: 0}
+  m_CellSize: {x: 90, y: 120}
+  m_Spacing: {x: 5, y: 5}
   m_Constraint: 1
   m_ConstraintCount: 4
 --- !u!1 &1395376068

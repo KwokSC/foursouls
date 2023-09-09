@@ -71,7 +71,11 @@ public class ActivateHoverEffect : MonoBehaviour
         }
     }
 
-    private IEnumerator ScaleCardSmoothly(Vector3 targetScale)
+    public void OnIsActivatedChanged(bool isActivated) {
+        StartCoroutine(RotateCard(isActivated));
+    }
+
+    IEnumerator ScaleCardSmoothly(Vector3 targetScale)
     {
         float elapsedTime = 0f;
         while (elapsedTime < hoverDuration)
@@ -81,5 +85,21 @@ public class ActivateHoverEffect : MonoBehaviour
             yield return null;
         }
         transform.localScale = targetScale;
+    }
+
+    IEnumerator RotateCard(bool isActivated)
+    {
+        float elapsedTime = 0f;
+        Vector3 originalRotation = transform.eulerAngles;
+        Quaternion targetRotation = isActivated ? Quaternion.Euler(originalRotation.x, originalRotation.y, originalRotation.z + 90f) : Quaternion.Euler(Vector3.zero);
+        while (elapsedTime < hoverDuration)
+        {
+            transform.localScale = Vector3.Lerp(transform.localScale, Vector3.one, elapsedTime / hoverDuration);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, elapsedTime / hoverDuration);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        transform.localScale = Vector3.one;
+        transform.rotation = targetRotation;
     }
 }

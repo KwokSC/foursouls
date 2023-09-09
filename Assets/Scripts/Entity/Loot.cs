@@ -27,8 +27,10 @@ public class Loot : MonoBehaviour
     public void ExecuteEffect(GameObject target) {
         switch (target.name) {
             case "GamePlayer":
+                PlayerManager targetPlayer = target.GetComponent<PlayerManager>();
                 break;
             case "Monster":
+                MonsterManager monster = target.GetComponent<MonsterManager>();
                 break;
         }
     }

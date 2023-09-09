@@ -6,7 +6,8 @@ using TMPro;
 
 public class BehaviourManager : MonoBehaviour
 {
-    public GameManager gameManager;
+    public GameManager GameManager;
+
     public GameObject handCard;
     public Button dealButton;
     public Button endButton;
@@ -14,8 +15,8 @@ public class BehaviourManager : MonoBehaviour
 
     void Update()
     {
-        if (gameManager.gameState == GameManager.GameState.InGame) {
-            if(player == null) player = gameManager.localPlayer;
+        if (GameManager.gameState == GameManager.GameState.InGame) {
+            if(player == null) player = GameManager.localPlayer;
 
             if (player.playerState == PlayerManager.PlayerState.Discard) dealButton.GetComponentInChildren<TextMeshPro>().text = "Discard";
 
@@ -32,8 +33,6 @@ public class BehaviourManager : MonoBehaviour
 
     public void OnDealClick() {
         List<GameObject> selectedLoot = new();
-
-
 
         foreach (Transform loot in handCard.transform) {
             if (loot.gameObject.CompareTag("Loots")) {
