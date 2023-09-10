@@ -15,11 +15,12 @@ public class ActivateHoverEffect : MonoBehaviour
         originalScale = transform.localScale;
         switch (name) {
             case "Avatar":
-                player = transform.parent.GetComponent<GamePlayerDisplay>().player;
+                player = transform.parent.GetComponent<PlayerManager>();
                 isActivated = player.isActivated;
                 break;
             case "Item":
-                player = GetComponent<Item>().player;
+                GameManager GameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+                player = GameManager.playerList[GetComponent<Item>().player];
                 isActivated = GetComponent<Item>().isActivated;
                 break;
         }

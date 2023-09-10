@@ -14,16 +14,6 @@ public class RoomManager : NetworkRoomManager
         InGame
     }
 
-    public override void OnStartHost()
-    {
-        base.OnStartHost();
-    }
-
-    public override void OnStartClient()
-    {
-        base.OnStartClient();
-    }
-
     void ChangeRoomState(string sceneName) {
         if (sceneName.Equals(RoomScene)) {
             roomState = RoomState.InRoom;
@@ -42,15 +32,23 @@ public class RoomManager : NetworkRoomManager
             if (roomPlayer.playerList == null)
             {
                 roomPlayer.playerList = GameObject.Find("PlayerList");
-                roomPlayer.SpawnDisplay();
             }
         }
     }
 
-    public override GameObject OnRoomServerCreateGamePlayer(NetworkConnectionToClient conn, GameObject roomPlayer) {
+    public override GameObject OnRoomServerCreateRoomPlayer(NetworkConnectionToClient conn)
+    {
+        GameObject roomPlayerObject = Instantiate(roomPlayerPrefab.gameObject, Vector3.zero, Quaternion.identity);
+        RoomPlayerManager roomPlayer = roomPlayerObject.GetComponent<RoomPlayerManager>();
+        return roomPlayerObject;
+    }
+
+    public override GameObject OnRoomServerCreateGamePlayer(NetworkConnectionToClient conn, GameObject roomPlayerObject) {
         GameObject gamePlayerObject = Instantiate(playerPrefab, Vector2.zero, Quaternion.identity);
         PlayerManager gamePlayer = gamePlayerObject.GetComponent<PlayerManager>();
-        gamePlayer.SetupPlayer(roomPlayer.GetComponent<RoomPlayerManager>());
+        RoomPlayerManager roomPlayer = roomPlayerObject.GetComponent<RoomPlayerManager>();
+        gamePlayer.playerName = roomPlayer.playerName;
+        gamePlayer.playerIndex = roomPlayer.index;
         return gamePlayerObject;
     }
 

@@ -18,6 +18,9 @@ public class PlayerManager : NetworkBehaviour
     [SyncVar]
     public string playerName;
 
+    [SyncVar]
+    public int playerIndex;
+
     [SyncVar(hook = nameof(OnCharacterIdChanged))]
     public int characterId = -1;
 
@@ -33,9 +36,6 @@ public class PlayerManager : NetworkBehaviour
     [SyncVar(hook = nameof(OnSoulsChanged))]
     public int souls = 0;
 
-    [SyncVar(hook = nameof(OnReadyChanged))]
-    public bool isReady = false;
-
     [SyncVar(hook = nameof(OnTurnStatusChanged))]
     public bool isSelfTurn;
 
@@ -45,13 +45,11 @@ public class PlayerManager : NetworkBehaviour
     [SyncVar(hook = nameof(OnActivatedChanged))]
     public bool isActivated = false;
 
-    public GameObject gamePlayerDisplay;
+    public List<int> handCardList = new();
+    public List<int> itemList = new();
 
-    readonly SyncList<int> handCardList = new();
-    readonly SyncList<int> itemList = new();
-
-    List<GameObject> lootObjects = new();
-    List<GameObject> itemObjects = new();
+    public List<GameObject> lootObjects = new();
+    public List<GameObject> itemObjects = new();
 
     public int dealTimes = 0;
     public int attackTimes = 0;
@@ -67,9 +65,17 @@ public class PlayerManager : NetworkBehaviour
         UIManager = GameObject.Find("UIManager").GetComponent<UIManager>();
     }
 
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+    }
+
+    #region hooks
     public void OnCharacterIdChanged(int oldId, int newId)
     {
-        UIManager.OnCharacterUpdate(this);
+        CharacterSO character = UIManager.OnCharacterUpdate(this);
+        attack = character.attack;
+        health = character.health;
     }
 
     public void OnAttackChanged(int oldAttack, int newAttack)
@@ -99,7 +105,7 @@ public class PlayerManager : NetworkBehaviour
 
     public void OnActivatedChanged(bool oldStatus, bool newStatus)
     {
-        UIManager.OnActivatedUpdate(gamePlayerDisplay.transform.Find("Avatar").gameObject, isActivated);
+        UIManager.OnActivatedUpdate(transform.Find("Avatar").gameObject, isActivated);
     }
 
     public void OnTurnStatusChanged(bool oldStatus, bool newStatus)
@@ -111,60 +117,38 @@ public class PlayerManager : NetworkBehaviour
     {
 
     }
-
-    public void SetupPlayer(RoomPlayerManager roomPlayer)
-    {
-        playerName = roomPlayer.playerName;
-        playerState = PlayerState.Idle;
-    }
+    #endregion
 
     #region command
-    [Command]
-    public void CmdPlayerReady() {
-        isReady = true;
-    }
-
-    [Command]
-    public void CmdSetupCharacter(int character, int item)
-    {
-        characterId = character;
-        itemObjects.Add(UIManager.SpawnItem(item));
-    }
 
     [Command]
     public void CmdDrawCard(int[] cardList)
     {
-        handCardList.AddRange(cardList);
-        foreach (int id in cardList)
-        {
-            lootObjects.Add(UIManager.SpawnLoot(id));
-        }
+
     }
 
     [Command]
     public void CmdDrawCard(int card)
     {
-        handCardList.Add(card);
-        lootObjects.Add(UIManager.SpawnLoot(card));
+
+    }
+
+    [Command]
+    public void CmdSetupCharacter(int character, int item)
+    {
+
     }
 
     [Command]
     public void CmdDealCard(GameObject loot)
     {
-        if (dealTimes == 0) return;
-        UIManager.AddBroadCast("You don't have enough deal times.");
-        Loot lootComponent = loot.GetComponent<Loot>();
-        lootComponent.ExecuteEffect();
-        handCardList.Remove(lootComponent.lootId);
-        lootObjects.Remove(loot);
+
     }
 
     [Command]
     public void CmdDealCard(GameObject loot, GameObject target)
     {
-        Loot lootComponent = loot.GetComponent<Loot>();
-        lootComponent.ExecuteEffect(target);
-        handCardList.Remove(lootComponent.lootId);
+
     }
 
     [Command]
@@ -177,13 +161,13 @@ public class PlayerManager : NetworkBehaviour
     [Command]
     public void CmdActivateItem(GameObject item)
     {
-        item.GetComponent<Item>().ExecuteEffect();
+
     }
 
     [Command]
     public void CmdActivatedItem(GameObject item, GameObject target)
     {
-        item.GetComponent<Item>().ExecuteEffect(target);
+
     }
 
     [Command]
@@ -195,8 +179,26 @@ public class PlayerManager : NetworkBehaviour
     [Command]
     public void CmdMoneyChange(int money)
     {
-        if (!isLocalPlayer) return;
         coins += money;
+    }
+
+    #endregion
+
+    #region rpc
+
+    [ClientRpc]
+    public void RpcShowLoot(GameObject card) {
+        UIManager.ShowLoot(card);
+    }
+
+    [ClientRpc]
+    public void RpcShowItem(GameObject item) {
+        UIManager.ShowItem(item);
+    }
+
+    [ClientRpc]
+    public void RpcShowDisplay() {
+        UIManager.ShowPlayerDisplay(this);
     }
 
     #endregion

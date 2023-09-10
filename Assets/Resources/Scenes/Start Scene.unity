@@ -445,14 +445,16 @@ MonoBehaviour:
   onlineScene: Assets/Resources/Scenes/Room Scene.unity
   transport: {fileID: 787596396}
   networkAddress: localhost
-  maxConnections: 2
+  maxConnections: 4
   disconnectInactiveConnections: 0
   disconnectInactiveTimeout: 60
   authenticator: {fileID: 0}
-  playerPrefab: {fileID: 7395119151412295628, guid: 202b22d948cb947518c2517d745d29a1, type: 3}
+  playerPrefab: {fileID: 7015148340349746316, guid: 6f629c9cd5c1d6c43a3702f416d04382, type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0
-  spawnPrefabs: []
+  spawnPrefabs:
+  - {fileID: 4547074719382619189, guid: da6b6a0232dbf4bbeb789e3d065ec63c, type: 3}
+  - {fileID: 7687575801074223547, guid: 1eeba49ce20ba4000803c7fd5f44bfc3, type: 3}
   snapshotSettings:
     bufferTimeMultiplier: 2
     bufferLimit: 32
@@ -468,7 +470,7 @@ MonoBehaviour:
   timeInterpolationGui: 0
   showRoomGUI: 1
   minPlayers: 1
-  roomPlayerPrefab: {fileID: 7188932987552207422, guid: b91a22ff7676f4e22bbc4395679272f6, type: 3}
+  roomPlayerPrefab: {fileID: -4859674313059511277, guid: bcbb43b0476974f269126f9b7e2ac9be, type: 3}
   RoomScene: Assets/Resources/Scenes/Room Scene.unity
   GameplayScene: Assets/Resources/Scenes/Game Scene.unity
   _allPlayersReady: 0

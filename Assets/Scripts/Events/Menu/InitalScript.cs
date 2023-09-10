@@ -9,7 +9,7 @@ public class InitalScript : MonoBehaviour
 {
     public Dropdown numSelection;
     public InputField nameInput;
-    NetworkRoomManager room = NetworkManager.singleton as NetworkRoomManager;
+    RoomManager room = NetworkManager.singleton as RoomManager;
 
     public void OnNumChange()
     {
@@ -29,6 +29,6 @@ public class InitalScript : MonoBehaviour
     public void JumpToMenu()
     {
         room.StopHost();
-        SceneManager.LoadScene("1");
+        SceneManager.LoadScene(1);
     }
 }

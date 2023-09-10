@@ -11,6 +11,6 @@ public class GamePlayerDisplay : MonoBehaviour
     public Text healthText;
     public Text coinsText;
     public Text soulsText;
-
-    public PlayerManager player;
+    public GameObject handCard;
+    public GameObject itemList;
 }

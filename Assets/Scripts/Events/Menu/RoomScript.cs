@@ -49,12 +49,10 @@ public class RoomScript : MonoBehaviour
                     {
                         interactable = false;
                         break;
-
                     }
                 }
                 ReadyButton.GetComponent<Button>().interactable = interactable;
             }
-
         }
         else
         {
@@ -90,6 +88,6 @@ public class RoomScript : MonoBehaviour
         else {
             room.StopClient();
         }
-        SceneManager.LoadScene("1");
+        SceneManager.LoadScene(1);
     }
 }

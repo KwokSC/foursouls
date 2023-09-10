@@ -19,7 +19,7 @@ public class Item: MonoBehaviour
     public bool isActivated;
     public bool isPassive;
     public ItemType type;
-    public PlayerManager player;
+    public int player;
 
     void Start()
     {

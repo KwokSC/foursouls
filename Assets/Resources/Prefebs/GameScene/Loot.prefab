@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 570331247173363966}
   - component: {fileID: 7487283423605458818}
   - component: {fileID: 6578908562318071835}
-  - component: {fileID: -1986074371766667279}
+  - component: {fileID: -7341821304443646691}
   m_Layer: 6
   m_Name: Loot
   m_TagString: Loots
@@ -93,7 +93,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lootId: 0
   amount: 0
-  isItem: 0
   lootName: 
   lootSO: {fileID: 11400000, guid: b6cd4f93f99f047619995497f6dae9f3, type: 2}
   image: {fileID: 971200056737906579}
@@ -147,8 +146,8 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls:
         - m_Target: {fileID: 6578908562318071835}
-          m_TargetAssemblyTypeName: LootUIEffect, Assembly-CSharp
-          m_MethodName: OnClicked
+          m_TargetAssemblyTypeName: LootSelect, Assembly-CSharp
+          m_MethodName: OnClick
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -175,7 +174,7 @@ MonoBehaviour:
   hoverEnabled: 0
   isHovering: 0
   isSelected: 0
---- !u!114 &-1986074371766667279
+--- !u!114 &-7341821304443646691
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

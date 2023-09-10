@@ -21,6 +21,7 @@ public class GameManager : NetworkBehaviour
 
     public List<PlayerManager> playerList = new();
     public PlayerManager localPlayer;
+    public int localPlayerIndex;
     public PlayerManager winner;
 
     public UIManager UIManager;
@@ -49,14 +50,13 @@ public class GameManager : NetworkBehaviour
     [SyncVar(hook = nameof(OnEndGameChanged))]
     public bool isGameOver = false;
 
-    public float characterSelectionDuration = 20f;
+    public float characterSelectionDuration = 30f;
     public float roundDuration = 60f;
 
     [Server]
     public override void OnStartServer()
     {
-        if (gameProcess != null) { StopCoroutine(gameProcess); gameProcess = null; };
-        StartCoroutine(GameProcess());
+
     }
 
     #region hooks
@@ -73,11 +73,6 @@ public class GameManager : NetworkBehaviour
 
     public void OnEndGameChanged(bool oldStatus, bool newStatus)
     {
-        if (gameProcess != null)
-        {
-            StopCoroutine(gameProcess);
-            gameProcess = null;
-        }
         RpcDeclareVictory(winner.playerName);
     }
 
@@ -125,7 +120,8 @@ public class GameManager : NetworkBehaviour
         itemResources = Resources.LoadAll<ItemSO>("Objects/Items");
         for (int i = 0; i < itemResources.Length; i++)
         {
-            if (itemResources[i].type == ItemSO.ItemType.Treasure) {
+            if (itemResources[i].type == ItemSO.ItemType.Treasure)
+            {
                 treasureDeck.Add(itemResources[i].itemId);
             }
         }
@@ -178,10 +174,11 @@ public class GameManager : NetworkBehaviour
             int[] characterOptions = characterDeck.GetRange(i, 3).ToArray();
             if (characterOptions.Contains(3))
             {
-                TargetSendCharacterOptions(connection, characterOptions, treasureDeck.GetRange(0,3).ToArray(), selectionTimeLimit);
-                treasureDeck.RemoveRange(0,3);
+                TargetSendCharacterOptions(connection, characterOptions, treasureDeck.GetRange(0, 3).ToArray(), selectionTimeLimit);
+                treasureDeck.RemoveRange(0, 3);
             }
-            else {
+            else
+            {
                 TargetSendCharacterOptions(connection, characterOptions, selectionTimeLimit);
             }
             i += 3;
@@ -191,23 +188,25 @@ public class GameManager : NetworkBehaviour
     [Server]
     bool CheckPlayerReady()
     {
+        bool isReady = true;
         foreach (PlayerManager player in playerList)
         {
-            return player.isReady;
+            if (player.characterId == -1) {
+                isReady = false;
+                break;
+            }
         }
-        return true;
+        return isReady;
     }
 
     [Server]
-    void SendHandCard(NetworkConnection connection, int num) {
+    void SendHandCard(NetworkConnection connection, int num)
+    {
         if (num > 1)
         {
-            TargetSendHandCard(connection, lootDeck.GetRange(0, num).ToArray());
-            lootDeck.RemoveRange(0, num);
         }
-        else {
-            TargetSendHandCard(connection, lootDeck[0]);
-            lootDeck.RemoveAt(0);
+        else
+        {
         }
     }
 
@@ -257,16 +256,6 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    [Server]
-    void SpawnLootOnServer() {
-
-    }
-
-    [Server]
-    void SpawnMonsterOnServer() {
-
-    }
-
     #endregion
 
     #region rpc functions
@@ -285,16 +274,7 @@ public class GameManager : NetworkBehaviour
         {
             PlayerManager player = playerObject.GetComponent<PlayerManager>();
             playerList.Add(player);
-            if (player.isLocalPlayer) localPlayer = player;
-        }
-    }
-
-    [ClientRpc]
-    void RpcSpawnGamePlayerDisplay()
-    {
-        foreach (PlayerManager player in playerList)
-        {
-            player.gamePlayerDisplay = UIManager.SpawnPlayerDisplay(player);
+            if (player.isLocalPlayer) { localPlayer = player; localPlayerIndex = playerList.IndexOf(player); }
         }
     }
 
@@ -314,22 +294,21 @@ public class GameManager : NetworkBehaviour
     [ClientRpc]
     void RpcForceSelectCharacter()
     {
-        GameObject characterSelection = GameObject.FindGameObjectWithTag("CharacterSelection");
+        CharacterSelect characterSelection = GameObject.FindGameObjectWithTag("CharacterSelection").GetComponent<CharacterSelect>();
         if (localPlayer.characterId == -1)
         {
-            int character = characterSelection.GetComponent<CharacterSelect>().RandomSelectCharacter();
+            int character = characterSelection.RandomSelectCharacter();
             if (character == 3)
             {
-                int eternal = characterSelection.GetComponent<CharacterSelect>().RandomSelectEternal();
+                int eternal = characterSelection.RandomSelectEternal();
                 localPlayer.CmdSetupCharacter(character, eternal);
             }
-            else {
-                CharacterSO characterSO = Resources.Load<CharacterSO>("Objects/Characters/Character_"+character);
-                localPlayer.CmdSetupCharacter(character, characterSO.eternal);
+            else
+            {
+                characterSelection.SelectCharacter(character);
+                localPlayer.CmdSetupCharacter(character, characterSelection.item);
             }
         }
-        localPlayer.CmdPlayerReady();
-        Destroy(characterSelection);
     }
 
     [ClientRpc]
@@ -337,17 +316,6 @@ public class GameManager : NetworkBehaviour
     {
         GameObject characterSelection = GameObject.FindGameObjectWithTag("CharacterSelection");
         Destroy(characterSelection);
-    }
-
-    [TargetRpc]
-    void TargetSendHandCard(NetworkConnection connection, int[] cardList)
-    {
-        localPlayer.CmdDrawCard(cardList);
-    }
-
-    [TargetRpc]
-    void TargetSendHandCard(NetworkConnection connection, int card) {
-        localPlayer.CmdDrawCard(card);
     }
 
     [TargetRpc]
@@ -417,7 +385,6 @@ public class GameManager : NetworkBehaviour
     IEnumerator CharacterSelectionPhase()
     {
         GenerateCharacterOptions(characterSelectionDuration);
-        RpcSpawnGamePlayerDisplay();
         float countdownTimer = characterSelectionDuration;
         while (countdownTimer > 0)
         {

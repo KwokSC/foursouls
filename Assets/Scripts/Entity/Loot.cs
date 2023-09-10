@@ -10,6 +10,7 @@ public class Loot : MonoBehaviour
     public string lootName;
     public LootSO lootSO;
     public Image image;
+    public int player;
 
     // Start is called before the first frame update
     void Start()

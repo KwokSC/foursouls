@@ -7,7 +7,7 @@ public class JoinScript : MonoBehaviour
 {
     public InputField codeInput;
     public InputField nameInput;
-    NetworkRoomManager room = NetworkManager.singleton as NetworkRoomManager;
+    RoomManager room = NetworkManager.singleton as RoomManager;
 
     public void OnCodeChanged()
     {
@@ -16,6 +16,7 @@ public class JoinScript : MonoBehaviour
 
     public void OnNameChanged()
     {
+
     }
 
     public void JumpToRoom()
@@ -27,6 +28,6 @@ public class JoinScript : MonoBehaviour
     public void JumpToMenu()
     {
         room.StopHost();
-        SceneManager.LoadScene("1");
+        SceneManager.LoadScene(1);
     }
 }

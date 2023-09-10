@@ -10,10 +10,7 @@ public class UIManager : MonoBehaviour
     public float hoverDuration = 0.5f;
 
     public GameObject table;
-    public GameObject handCard;
-    public GameObject itemList;
-    public GameObject characterDisplay;
-    public GameObject enemyArea;
+    public Transform[] spawnArea;
     public GameObject timer;
     public TextMeshProUGUI broadcast;
 
@@ -21,7 +18,6 @@ public class UIManager : MonoBehaviour
     public GameObject lootPrefab;
     public GameObject itemPrefab;
     public GameObject characterSelectionPrefab;
-    public GameObject gamePlayerDisplayPrefab;
 
     List<LootSO> lootResources;
     List<CharacterSO> characterResources;
@@ -39,18 +35,19 @@ public class UIManager : MonoBehaviour
     }
 
     // Here to adjust display spacing based on the players' hand cards amount.
-    void AdjustHandCard()
+    void AdjustHandCard(Transform handCard)
     {
-        int cardNum = handCard.transform.childCount;
+        int cardNum = handCard.childCount;
         float spacing = cardNum > 4 ? (600 - 150 * cardNum) / (cardNum - 1) : 0;
         float startPos = cardNum <= 4 ? -75 * (cardNum - 1) : -225;
         for (int i = 0; i < cardNum; i++)
         {
-            handCard.transform.GetChild(i).GetComponent<LootSelect>().OnCardPosXChanged(startPos + i * (150 + spacing));
+            handCard.GetChild(i).GetComponent<LootSelect>().OnCardPosXChanged(startPos + i * (150 + spacing));
         }
     }
 
-    public void AddBroadCast(string msg) {
+    public void AddBroadCast(string msg)
+    {
         broadcast.text += "\n" + msg;
     }
 
@@ -72,39 +69,39 @@ public class UIManager : MonoBehaviour
         CharacterSelection.GetComponent<CharacterSelect>().GeneratePanel(optionResources, itemResources, timeLimit);
     }
 
-    public GameObject SpawnLoot(int i)
+    public GameObject SpawnLoot(PlayerManager player, int i)
     {
+        GameObject lootObject = Instantiate(lootPrefab, Vector2.zero, Quaternion.identity);
+        Loot loot = lootObject.GetComponent<Loot>();
         LootSO lootResource = lootResources.Find(loot => loot.lootId == i);
-        GameObject loot = Instantiate(lootPrefab, Vector2.zero, Quaternion.identity);
-        loot.GetComponent<Loot>().lootSO = lootResource;
-        loot.transform.SetParent(handCard.transform, false);
-        AdjustHandCard();
-        return loot;
+        loot.lootSO = lootResource;
+        loot.player = player.playerIndex;
+        return lootObject;
     }
 
-    public GameObject SpawnItem(int i)
+    public void ShowLoot(GameObject loot)
+    {
+
+    }
+
+    public GameObject SpawnItem(PlayerManager player, int i)
     {
         ItemSO itemResource = itemResources.Find(item => item.itemId == i);
-        GameObject item = Instantiate(itemPrefab, Vector2.zero, Quaternion.identity);
-        item.GetComponent<Item>().itemSO = itemResource;
-        item.transform.SetParent(itemList.transform, false);
-        return item;
+        GameObject itemObject = Instantiate(itemPrefab, Vector2.zero, Quaternion.identity);
+        Item item = itemObject.GetComponent<Item>();
+        item.itemSO = itemResource;
+        item.player = player.playerIndex;
+        return itemObject;
     }
 
-    public GameObject SpawnPlayerDisplay(PlayerManager player)
+    public void ShowItem(GameObject item)
     {
-        GameObject gamePlayerDisplay = Instantiate(gamePlayerDisplayPrefab, Vector3.zero, Quaternion.identity);
-        gamePlayerDisplay.GetComponent<GamePlayerDisplay>().playerName.text = player.playerName;
-        gamePlayerDisplay.GetComponent<GamePlayerDisplay>().player = player;
-        if (player.isLocalPlayer)
-        {
-            gamePlayerDisplay.transform.SetParent(characterDisplay.transform, false);
-        }
-        else
-        {
-            gamePlayerDisplay.transform.SetParent(enemyArea.transform, false);
-        }
-        return gamePlayerDisplay;
+
+    }
+
+    public void ShowPlayerDisplay(PlayerManager player) {
+        Transform spawnPosition = spawnArea[(player.playerIndex - GameManager.localPlayerIndex + 4) % 4];
+        player.transform.SetParent(spawnPosition, false);
     }
 
     public void OnTurnStatusUpdate(PlayerManager player)
@@ -119,32 +116,31 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void OnCharacterUpdate(PlayerManager player)
+    public CharacterSO OnCharacterUpdate(PlayerManager player)
     {
         CharacterSO character = characterResources.Find(c => c.characterId == player.characterId);
-        player.gamePlayerDisplay.GetComponent<GamePlayerDisplay>().characterImg.sprite = character.sprite;
-        player.gamePlayerDisplay.GetComponent<GamePlayerDisplay>().attackText.text = character.attack.ToString();
-        player.gamePlayerDisplay.GetComponent<GamePlayerDisplay>().healthText.text = character.health.ToString();
+        player.GetComponent<GamePlayerDisplay>().characterImg.sprite = character.sprite;
+        return character;
     }
 
     public void OnAttackUpdate(PlayerManager player)
     {
-        player.gamePlayerDisplay.GetComponent<GamePlayerDisplay>().attackText.text = player.attack.ToString();
+        player.GetComponent<GamePlayerDisplay>().attackText.text = player.attack.ToString();
     }
 
     public void OnHealthUpdate(PlayerManager player)
     {
-        player.gamePlayerDisplay.GetComponent<GamePlayerDisplay>().healthText.text = player.health.ToString();
+        player.GetComponent<GamePlayerDisplay>().healthText.text = player.health.ToString();
     }
 
     public void OnCoinsUpdate(PlayerManager player)
     {
-        player.gamePlayerDisplay.GetComponent<GamePlayerDisplay>().coinsText.text = player.coins.ToString();
+        player.GetComponent<GamePlayerDisplay>().coinsText.text = player.coins.ToString();
     }
 
     public void OnSoulsUpdate(PlayerManager player)
     {
-        player.gamePlayerDisplay.GetComponent<GamePlayerDisplay>().soulsText.text = player.souls.ToString();
+        player.GetComponent<GamePlayerDisplay>().soulsText.text = player.souls.ToString();
     }
 
     public void OnActivatedUpdate(GameObject card, bool isActivated)

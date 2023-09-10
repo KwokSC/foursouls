@@ -1,7 +1,8 @@
 using System.Collections;
 using UnityEngine;
+using Mirror;
 
-public class LootSelect : MonoBehaviour
+public class LootSelect : NetworkBehaviour
 {
     private Vector3 originalLocalPosition;
     private IEnumerator currentHoverCoroutine;
@@ -21,28 +22,34 @@ public class LootSelect : MonoBehaviour
 
     public void OnMouseEnter()
     {
-        if (currentHoverCoroutine != null)
-        {
-            StopCoroutine(currentHoverCoroutine);
+        if (isOwned) {
+            if (currentHoverCoroutine != null)
+            {
+                StopCoroutine(currentHoverCoroutine);
+            }
+
+            if (hoverEnabled)
+            {
+                currentHoverCoroutine = MoveCardSmoothly(originalLocalPosition + new Vector3(0, hoverHeight, 0));
+                StartCoroutine(currentHoverCoroutine);
+            }
         }
 
-        if (hoverEnabled)
-        {
-            currentHoverCoroutine = MoveCardSmoothly(originalLocalPosition + new Vector3(0, hoverHeight, 0));
-            StartCoroutine(currentHoverCoroutine);
-        }
     }
 
     public void OnMouseExit()
     {
-        if (currentHoverCoroutine != null)
-        {
-            StopCoroutine(currentHoverCoroutine);
-        }
+        if (isOwned) {
+            if (currentHoverCoroutine != null)
+            {
+                StopCoroutine(currentHoverCoroutine);
+            }
 
-        if (hoverEnabled) {
-            currentHoverCoroutine = MoveCardSmoothly(originalLocalPosition);
-            StartCoroutine(currentHoverCoroutine);
+            if (hoverEnabled)
+            {
+                currentHoverCoroutine = MoveCardSmoothly(originalLocalPosition);
+                StartCoroutine(currentHoverCoroutine);
+            }
         }
     }
 
@@ -51,25 +58,29 @@ public class LootSelect : MonoBehaviour
         originalLocalPosition.x = x;
     }
 
-    public void OnClick() { 
-        isSelected = !isSelected;
-        hoverEnabled = !hoverEnabled;
-        if (isSelected) {
-            if (currentHoverCoroutine != null)
+    public void OnClick() {
+        if (isOwned) {
+            isSelected = !isSelected;
+            hoverEnabled = !hoverEnabled;
+            if (isSelected)
             {
-                StopCoroutine(currentHoverCoroutine);
+                if (currentHoverCoroutine != null)
+                {
+                    StopCoroutine(currentHoverCoroutine);
+                }
+                currentHoverCoroutine = MoveCardSmoothly(originalLocalPosition + new Vector3(0, hoverHeight, 0));
+                StartCoroutine(currentHoverCoroutine);
             }
-            currentHoverCoroutine = MoveCardSmoothly(originalLocalPosition + new Vector3(0, hoverHeight, 0));
-            StartCoroutine(currentHoverCoroutine);
-        } 
-        else {
-            if (currentHoverCoroutine != null)
+            else
             {
-                StopCoroutine(currentHoverCoroutine);
+                if (currentHoverCoroutine != null)
+                {
+                    StopCoroutine(currentHoverCoroutine);
+                }
+                currentHoverCoroutine = MoveCardSmoothly(originalLocalPosition);
+                StartCoroutine(currentHoverCoroutine);
             }
-            currentHoverCoroutine = MoveCardSmoothly(originalLocalPosition);
-            StartCoroutine(currentHoverCoroutine);
-        } 
+        }
     }
 
     private IEnumerator MoveCardSmoothly(Vector3 targetLocalPosition)

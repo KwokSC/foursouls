@@ -25,10 +25,10 @@ public class CharacterSelect : MonoBehaviour
 
     void Update()
     {
-        if (!GameManager.localPlayer.isReady && character != -1 && item != -1)
+        if (character != -1 && item != -1)
         {
             GameManager.localPlayer.CmdSetupCharacter(character, item);
-            GameManager.localPlayer.CmdPlayerReady();
+            Destroy(this);
         }
     }
 
